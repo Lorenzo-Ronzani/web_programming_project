@@ -7,20 +7,20 @@ function Header() {
       <div className='flex-col'>
         {/* Barra superior */}
         <div className='w-full'>
-          <div className='flex justify-around'>
+          <div className='flex w-full items-center justify-center'>
             {/* Logo e títulos */}
-            <div className='flex-col items-center text-center'>
+            <div className='flex w-1/3 flex-col items-center text-center'>
               <div>{/* Logo vai aqui */}</div>
-              <div className='text-2xl'>
+              <div className='text-2xl font-bold'>
                 <a href=''>Bow Course Registration</a>
               </div>
-              <div className='text-lg'>
+              <div className='text-lg text-gray-500'>
                 <a href=''>Software Development Department</a>
               </div>
             </div>
 
             {/* Menu de navegação */}
-            <div className='flex items-center gap-5'>
+            <div className='flex w-1/3 items-center justify-center gap-5'>
               <div className='text-lg font-normal text-gray-700 duration-200 hover:text-black'>
                 <a href=''>Programs</a>
               </div>
@@ -36,24 +36,21 @@ function Header() {
             </div>
 
             {/* Login / Sign Up */}
-            <div className='flex items-center gap-4'>
-              <div>
-                <button className='w-17 rounded-md bg-gray-100 p-1 duration-300 ease-in-out hover:bg-gray-200' type='button'>
-                  <a className='text-md' href=''>
-                    Login
-                  </a>
-                </button>
-              </div>
-              <div>
-                <button className='w-20 rounded-md bg-gray-700 p-1 text-white duration-300 ease-in-out hover:bg-gray-800'>
-                  <a className='text-md' href=''>
-                    Sign Up
-                  </a>
-                </button>
-              </div>
+            <div className='flex w-1/3 items-center justify-center gap-4 text-center'>
+              <button className='w-20 rounded-md bg-gray-100 p-1 duration-300 ease-in-out hover:bg-gray-200' type='button'>
+                <a className='text-md' href=''>
+                  Login
+                </a>
+              </button>
+              <button className='w-24 rounded-md bg-gray-700 p-1 text-white duration-300 ease-in-out hover:bg-gray-800'>
+                <a className='text-md' href=''>
+                  Sign Up
+                </a>
+              </button>
             </div>
           </div>
         </div>
+
         {/* Seção principal (texto + imagem) */}
         <div className='h-120 w-full bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-90%'>
           <div className='mx-auto flex h-full max-w-7xl items-center gap-8 gap-x-12 text-justify'>
@@ -67,10 +64,10 @@ function Header() {
                 <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s Lorem Ipsum has Lorem Ipsum has Lorem Ipsum has </p>
               </div>
               <div className='mt-6 flex items-center gap-5'>
-                <button className='w-40 rounded bg-white p-2 font-medium text-black duration-200 hover:bg-gray-100' type='button' onClick={() => alert('Botao clicado!')}>
+                <button className='w-40 cursor-pointer rounded-md border-2 border-solid border-white bg-white p-2 font-medium text-black shadow-lg duration-400 hover:scale-110 hover:bg-gray-100' type='button' onClick={() => alert('Botao clicado!')}>
                   <a href=''>Explore Programs</a>
                 </button>
-                <button className='w-35 rounded border-2 border-solid border-white p-2 text-white duration-200 hover:bg-white hover:text-black' type='button'>
+                <button className='w-35 cursor-pointer rounded-md border-2 border-solid border-white p-2 font-medium text-white duration-300 hover:bg-white hover:text-black' type='button'>
                   <a href=''>Register Now</a>
                 </button>
               </div>

@@ -7,5 +7,6 @@
   "printWidth": 9999,
   "jsxSingleQuote": true,
   "bracketSameLine": true,
-  "proseWrap": "never"
+  "proseWrap": "preserve",
+  "htmlWhitespaceSensitivity": "ignore"
 }

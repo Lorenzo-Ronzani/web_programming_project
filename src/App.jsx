@@ -1,15 +1,23 @@
-import {useState} from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import Header from "./components/header/Header";
-import "./App.css";
+import { useState } from 'react';
+import Header from './components/header/Header';
+import Programs from './components/programs/Programs';
+import Footer from './components/footer/Footer';
+import './App.css';
 
 function App() {
   const [count, setCount] = useState(0);
 
   return (
     <>
-      <Header />
+      <div>
+        <Header />
+      </div>
+      <div>
+        <Programs />
+      </div>
+      <div>
+        <Footer />
+      </div>
     </>
   );
 }
