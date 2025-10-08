@@ -5,7 +5,6 @@ import Footer from './components/footer/Footer';
 import Terms from './components/terms/Terms';
 import './App.css';
 
-
 function App() {
   const [count, setCount] = useState(0);
 
@@ -16,6 +15,9 @@ function App() {
       </div>
       <div>
         <Programs />
+      </div>
+      <div>
+        <Terms />
       </div>
       <div>
         <Footer />
