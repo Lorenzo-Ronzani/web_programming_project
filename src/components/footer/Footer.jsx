@@ -44,7 +44,11 @@ function Footer() {
 
         <div className='my-8 border-t border-white/20' />
 
+<<<<<<< HEAD
         <div className='text-center text-sm text-white/90'>© {new Date().getFullYear()} Bow Course Registration. All rights reserved.</div>
+=======
+        <div className='text-center text-sm text-white/90'>© {new Date().getFullYear()} Bow Course Registration - Dani. All rights reserved.</div>
+>>>>>>> a5ebf00a828ec3cb1dfdf6f461279875860424b6
       </div>
     </footer>
   );
