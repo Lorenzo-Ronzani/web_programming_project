@@ -27,7 +27,7 @@ function Terms() {
                 brightness_7
               </span>
             </div>
-            <h3 className='mb-2 text-xl font-bold text-gray-900'>Summer</h3>
+            <h3 className='mb-2 text-xl font-bold text-gray-900'>Summer Term</h3>
             <p>June - August</p>
             <div className='text-md mt-5 text-gray-500'>
               <p>Registration Opens: May 1</p>
@@ -40,7 +40,7 @@ function Terms() {
                 nest_eco_leaf
               </span>
             </div>
-            <h3 className='mb-2 text-xl font-bold text-gray-900'>Fall</h3>
+            <h3 className='mb-2 text-xl font-bold text-gray-900'>Fall Term</h3>
             <p>September - December</p>
             <div className='text-md mt-5 text-gray-500'>
               <p>Registration Opens: August 1</p>
@@ -53,7 +53,7 @@ function Terms() {
                 mode_cool
               </span>
             </div>
-            <h3 className='mb-2 text-xl font-bold text-gray-900'>Winter</h3>
+            <h3 className='mb-2 text-xl font-bold text-gray-900'>Winter Term</h3>
             <p>January - March</p>
             <div className='text-md mt-5 text-gray-500'>
               <p>Registration Opens: December 1</p>
