@@ -1,8 +1,5 @@
 import { useState } from 'react';
-import Header from './components/header/Header';
-import Programs from './components/programs/Programs';
-import Footer from './components/footer/Footer';
-import Terms from './components/terms/Terms';
+import Home from './components/pages/Home';
 import './App.css';
 
 function App() {
@@ -10,18 +7,7 @@ function App() {
 
   return (
     <>
-      <div>
-        <Header />
-      </div>
-      <div>
-        <Programs />
-      </div>
-      <div>
-        <Terms />
-      </div>
-      <div>
-        <Footer />
-      </div>
+      <Home />
     </>
   );
 }
