@@ -18,8 +18,6 @@ function Header() {
                 <a href=''>Software Development Department</a>
               </div>
             </div>
-
-            {/* Menu de navegação */}
             <div className='flex w-1/3 items-center justify-center gap-5'>
               <div className='text-lg font-normal text-gray-700 duration-200 hover:text-black'>
                 <a href=''>Programs</a>
@@ -51,10 +49,8 @@ function Header() {
           </div>
         </div>
 
-        {/* Seção principal (texto + imagem) */}
         <div className='h-120 w-full bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-90%'>
           <div className='mx-auto flex h-full max-w-7xl items-center gap-8 gap-x-12 text-justify'>
-            {/* Texto */}
             <div className='flex w-1/2 flex-col'>
               <div className='space-y-2 text-5xl'>
                 <h1 className='font-bold text-white text-shadow-xs'>Shape Your Future in</h1>
