@@ -38,7 +38,7 @@ function Programs() {
                   <span>Fees: $9,254 domestic / $27,735 international</span>
                 </div>
               </div>
-              <button className='mt-6 w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700'>Learn More</button>
+              <button className='mt-6 w-full cursor-pointer rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700'>Learn More</button>
             </div>
 
             {/* Post Diploma Program */}
@@ -67,7 +67,7 @@ function Programs() {
                   <span>Fees: $7,895 domestic / $23,675 international</span>
                 </div>
               </div>
-              <button className='mt-6 w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700'>Learn More</button>
+              <button className='mt-6 w-full cursor-pointer rounded-lg bg-green-600 py-3 font-semibold text-white transition-colors hover:bg-green-700'>Learn More</button>
             </div>
 
             {/* Certificate Program */}
@@ -95,7 +95,7 @@ function Programs() {
                   <span>Fees: $3,895 domestic / $12,675 international</span>
                 </div>
               </div>
-              <button className='mt-6 w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700'>Learn More</button>
+              <button className='mt-6 w-full cursor-pointer rounded-lg bg-purple-600 py-3 font-semibold text-white transition-colors hover:bg-purple-700'>Learn More</button>
             </div>
           </div>
         </div>

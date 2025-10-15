@@ -37,12 +37,12 @@ function Header() {
 
             {/* Login / Sign Up */}
             <div className='flex w-1/3 items-center justify-center gap-4 text-center'>
-              <button className='w-20 rounded-md bg-gray-100 p-1 duration-300 ease-in-out hover:bg-gray-200' type='button'>
+              <button className='w-20 cursor-pointer rounded-md bg-gray-100 p-1 duration-300 ease-in-out hover:bg-gray-200' type='button'>
                 <a className='text-md' href=''>
                   Login
                 </a>
               </button>
-              <button className='w-24 rounded-md bg-gray-700 p-1 text-white duration-300 ease-in-out hover:bg-gray-800'>
+              <button className='w-24 cursor-pointer rounded-md bg-gray-700 p-1 text-white duration-300 ease-in-out hover:bg-gray-800'>
                 <a className='text-md' href=''>
                   Sign Up
                 </a>
