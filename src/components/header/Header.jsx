@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 function Header() {
   return (
-    <>
+    <div>
       {/* Container principal */}
       <div className='flex-col'>
         {/* Barra superior */}
@@ -77,7 +77,7 @@ function Header() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 export default Header;
