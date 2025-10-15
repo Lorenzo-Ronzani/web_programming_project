@@ -19,9 +19,10 @@ const SideBarMenu = () => {
             <div className='flex items-center space-x-3'>
               <img src='' alt='' />
               <div className='hidden lg:block'>
-                <p className='text-sm font-medium text-gray-900'></p>
-                <p className='text-xs text-gray-500'></p>
+                <p className='text-sm font-medium text-gray-900'>Lorenzo</p>
+                <p className='text-xs text-gray-500'>Ronzani</p>
               </div>
+              <i></i>
             </div>
           </div>
         </div>
