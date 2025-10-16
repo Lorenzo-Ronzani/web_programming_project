@@ -9,13 +9,17 @@ function Header() {
         <div className='w-full'>
           <div className='flex w-full items-center justify-center'>
             {/* Logo e títulos */}
-            <div className='flex w-1/3 flex-col items-center text-center'>
-              <div>{/* Logo vai aqui */}</div>
-              <div className='text-2xl font-bold'>
-                <a href=''>Bow Course Registration</a>
+            <div className='flex w-1/3 items-center justify-center space-x-3'>
+              <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-black'>
+                <span className='material-symbols-outlined text-3xl text-white'>school</span>
               </div>
-              <div className='text-lg text-gray-500'>
-                <a href=''>Software Development Department</a>
+              <div className='flex-col text-left'>
+                <div className='text-2xl font-bold'>
+                  <a href=''>Bow Course Registration</a>
+                </div>
+                <div className='text-lg text-gray-500'>
+                  <a href=''>Software Development Department</a>
+                </div>
               </div>
             </div>
             <div className='flex w-1/3 items-center justify-center gap-5'>
