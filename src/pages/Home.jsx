@@ -8,11 +8,9 @@ function Home() {
   return (
     <>
       <Header />
-      <main>
         <Programs />
         <Courses />
         <Terms />
-      </main>
       <Footer />
     </>
   );
