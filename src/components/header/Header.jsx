@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import banner from '../../assets/banner/course_registration_banner.png'; // image path
+
 
 function Header() {
   return (
@@ -87,11 +89,16 @@ function Header() {
             </div>
 
             {/* Imagem */}
-            <div className='flex w-1/2 items-center justify-center'>
-              <div className='h-70 w-200 bg-black'>
-                <img src='' alt='imagem' className='h-auto max-w-full' />
-              </div>
+            <div className="flex w-1/2 items-center justify-center">
+
+              <img
+                src={banner}
+                alt="Students collaborating in a software development program"
+                className="rounded-xl shadow-lg max-w-full h-auto object-contain"
+              />            
+
             </div>
+
           </div>
         </div>
       </div>
