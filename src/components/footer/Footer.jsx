@@ -1,6 +1,6 @@
 function Footer() {
   return (
-    <footer className="bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 text-white mt-auto">
+    <footer className="bg-linear-to-r from-indigo-500 via-sky-500 to-emerald-500 text-white mt-auto">
       <div className="mx-auto max-w-7xl px-6 py-4 text-center">
         <h2 className="text-xl font-bold">Bow Programs Portal</h2>
         <p className="mt-1 text-sm text-white/90">Software Development Department</p>

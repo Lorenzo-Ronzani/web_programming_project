@@ -14,7 +14,7 @@ function Header() {
       {/* Main container */}
       <div className='flex-col'>
         {/* Hero section */}
-        <div className='w-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 py-16'>
+        <div className='w-full bg-linear-to-r from-indigo-500 via-sky-500 to-emerald-500 py-16'>
           <div className='mx-auto flex max-w-7xl items-center gap-8 px-6 text-justify'>
             
             {/* Left side content */}
@@ -34,7 +34,7 @@ function Header() {
               {/* Buttons */}
               <div className='mt-6 flex items-center gap-5'>
                 <button
-                  onClick={scrollToPrograms} // ✅ smooth scroll
+                  onClick={scrollToPrograms} // smooth scroll
                   className='w-40 cursor-pointer rounded-md border-2 border-solid border-white bg-white p-2 font-medium text-black shadow-lg duration-300 hover:scale-110 hover:bg-gray-100'
                   type='button'
                 >
