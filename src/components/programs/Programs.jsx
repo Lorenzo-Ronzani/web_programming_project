@@ -47,7 +47,7 @@ function Programs({ limit }) {
 
               {/* Title & Description */}
               <h3 className="mt-2 mb-3 text-2xl font-bold text-gray-900">{program.title}</h3>
-              <p className="mb-4 text-gray-600 flex-grow">{program.description}</p>
+              <p className="mb-4 text-gray-600 grow">{program.description}</p>
 
               {/* Details */}
               <div className="mb-6 space-y-3 text-gray-700">
