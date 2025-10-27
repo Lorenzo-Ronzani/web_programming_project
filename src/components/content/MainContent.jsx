@@ -8,6 +8,13 @@ function Header() {
       section.scrollIntoView({ behavior: "smooth" });
     }
   };
+  // Smooth scroll function
+  const scrollToCourses = () => {
+    const section = document.getElementById("courses");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <div>
@@ -39,6 +46,13 @@ function Header() {
                   type='button'
                 >
                   Explore Programs
+                </button>
+                <button
+                  onClick={scrollToCourses} // smooth scroll
+                  className='w-40 cursor-pointer rounded-md border-2 border-solid border-white bg-white p-2 font-medium text-black shadow-lg duration-300 hover:scale-110 hover:bg-gray-100'
+                  type='button'
+                >
+                  Explore Courses
                 </button>
 
                 <button 

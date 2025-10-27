@@ -7,28 +7,27 @@ import CoursesAll from "./pages/CoursesAll";
 import Terms from "./components/terms/Terms";
 import DashboardUser from "./pages/DashboardUser";
 import MainContent from "./pages/MainContent";
-
+import LoginPage from "./pages/LoginPage"; 
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
+    <AuthProvider>
+      <Router>
 
-        {/* User Dashboard */}
-        <Route path="/dashboarduser" element={<DashboardUser />} />
-
-        <Route path="/programs" element={<Programs />} />
-        <Route path="/programsall" element={<ProgramsAll />} />
-
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/coursesall" element={<CoursesAll />} />
-
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/content" element={<MainContent />} />
-
-      </Routes>
-    </Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboarduser" element={<DashboardUser />} />
+          <Route path="/programs" element={<Programs />} />
+          <Route path="/programsall" element={<ProgramsAll />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/coursesall" element={<CoursesAll />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/content" element={<MainContent />} />
+          <Route path="/login" element={<LoginPage />} /> 
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
