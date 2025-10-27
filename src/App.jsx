@@ -8,6 +8,7 @@ import Terms from "./components/terms/Terms";
 import DashboardUser from "./pages/DashboardUser";
 import MainContent from "./pages/MainContent";
 import LoginPage from "./pages/LoginPage"; 
+import RegisterPage from "./pages/RegisterPage";
 import { AuthProvider } from "./context/AuthContext";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/content" element={<MainContent />} />
           <Route path="/login" element={<LoginPage />} /> 
+          <Route path="/register" element={<RegisterPage />} />
         </Routes>
       </Router>
     </AuthProvider>
