@@ -47,7 +47,7 @@ function UserMenu() {
       ]
     : [
         { label: "Login", href: "/login" },
-        { label: "Register (coming soon)", href: "#", disabled: true },
+        { label: "Register", href: "/register", disabled: false },
       ];
 
   return (
