@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "title": "Rapid Application Development",
+    "color": "blue",
+    "description": "Learn how to quickly design, develop, and deploy modern applications using efficient frameworks and tools."
+  },
+  {
+    "id": 2,
+    "title": "Web Programming",
+    "color": "green",
+    "description": "Master front-end and back-end technologies to build dynamic, responsive, and user-friendly web applications."
+  },
+  {
+    "id": 3,
+    "title": "Object Oriented Programming",
+    "color": "purple",
+    "description": "Understand the principles of OOP and learn to design reusable, scalable, and maintainable software using C# and Java."
+  },
+  {
+    "id": 4,
+    "title": "Database Systems",
+    "color": "yellow",
+    "description": "Design relational databases, write SQL queries, and manage data efficiently using MySQL and SQL Server."
+  },
+  {
+    "id": 5,
+    "title": "Network Essentials",
+    "color": "red",
+    "description": "Learn how computer networks operate, how data travels, and how to configure secure connections between systems."
+  },
+  {
+    "id": 6,
+    "title": "Mobile Application Development",
+    "color": "indigo",
+    "description": "Develop mobile apps for Android and iOS platforms using frameworks like React Native and Flutter."
+  },
+  {
+    "id": 7,
+    "title": "Cloud Computing",
+    "color": "cyan",
+    "description": "Explore cloud platforms such as AWS and Azure, and learn to deploy scalable and reliable web services."
+  },
+  {
+    "id": 8,
+    "title": "Cybersecurity Fundamentals",
+    "color": "orange",
+    "description": "Understand modern security threats and learn strategies for protecting applications, networks, and users."
+  },
+  {
+    "id": 9,
+    "title": "Software Testing & Quality Assurance",
+    "color": "teal",
+    "description": "Learn manual and automated testing techniques to ensure the quality, performance, and security of software systems."
+  },
+  {
+    "id": 10,
+    "title": "Data Analytics & Visualization",
+    "color": "pink",
+    "description": "Use Python and data visualization tools like Power BI to analyze and present meaningful business insights."
+  },
+  {
+    "id": 11,
+    "title": "DevOps Practices",
+    "color": "emerald",
+    "description": "Understand the principles of continuous integration, delivery, and deployment using modern DevOps pipelines."
+  },
+  {
+    "id": 12,
+    "title": "Artificial Intelligence Fundamentals",
+    "color": "violet",
+    "description": "Explore machine learning concepts, neural networks, and AI tools used in modern applications."
+  },
+  {
+    "id": 13,
+    "title": "Web Accessibility and UX Design",
+    "color": "rose",
+    "description": "Design accessible and user-friendly web interfaces following WCAG and UX best practices."
+  },
+  {
+    "id": 14,
+    "title": "Software Project Management",
+    "color": "amber",
+    "description": "Learn agile and scrum methodologies, project planning, and team collaboration for software development."
+  },
+  {
+    "id": 15,
+    "title": "API Development and Integration",
+    "color": "lime",
+    "description": "Design, document, and consume RESTful and GraphQL APIs for seamless data exchange between systems."
+  },
+  {
+    "id": 16,
+    "title": "Operating Systems Concepts",
+    "color": "slate",
+    "description": "Understand how operating systems manage memory, processes, and user interactions at a low level."
+  },
+  {
+    "id": 17,
+    "title": "Ethical Hacking and Penetration Testing",
+    "color": "fuchsia",
+    "description": "Learn ethical hacking techniques to identify vulnerabilities and strengthen system security."
+  },
+  {
+    "id": 18,
+    "title": "Game Development Essentials",
+    "color": "sky",
+    "description": "Create 2D and 3D games using Unity and C#, exploring design principles and physics simulation."
+  },
+  {
+    "id": 19,
+    "title": "Software Architecture & Design Patterns",
+    "color": "stone",
+    "description": "Understand software architecture principles and implement common design patterns for scalable systems."
+  },
+  {
+    "id": 20,
+    "title": "Emerging Technologies",
+    "color": "neutral",
+    "description": "Explore current trends like IoT, blockchain, and edge computing, and their impact on modern software systems."
+  }
+]
