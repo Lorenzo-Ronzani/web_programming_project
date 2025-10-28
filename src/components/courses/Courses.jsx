@@ -41,6 +41,27 @@ function Courses() {
       bgColor: 'bg-yellow-50',
       borderColor: 'border-yellow-200',
       textColor: 'text-yellow-700'
+    },
+    {
+      name: 'Internet of Things',
+      description: 'Explore IoT by building simple interfaces between computers and devices, gaining insight into architecture, networking, and device control.',
+      bgColor: 'bg-teal-50',
+      borderColor: 'border-teal-200',
+      textColor: 'text-teal-700'
+    },
+    {
+      name: 'Math for the Computer Industry',
+      description: 'Gain practical math skills for computing, including number bases, set theory, logic, Boolean algebra, and basic statistics for IT.',
+      bgColor: 'bg-stone-50',
+      borderColor: 'border-stone-200',
+      textColor: 'text-stone-700'
+    },
+    {
+      name: 'Essential Skills for Teams Collaboration',
+      description: 'Develop essential teamwork skills, including communication, conflict resolution, and collaboration techniques for effective team dynamics.',
+      bgColor: 'bg-indigo-50',
+      borderColor: 'border-indigo-200',
+      textColor: 'text-indigo-700'
     }
   ];
 
