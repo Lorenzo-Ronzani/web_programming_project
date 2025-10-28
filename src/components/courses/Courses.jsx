@@ -2,42 +2,42 @@ function Courses() {
   const courses = [
     {
       name: 'Rapid Application Development',
-      description: 'Learn how to quickly design, develop, and deploy modern applications using efficient frameworks.',
+      description: 'Learn programming techniques in a rapid application development environment to build GUI and data-driven applications using forms, controls, and user-defined classes.',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200',
       textColor: 'text-blue-700'
     },
     {
       name: 'Web Programming',
-      description: 'Master front-end and back-end technologies to build dynamic, responsive, and user-friendly web applications.',
+      description: 'Learn to build secure, interactive web applications using three-tier architecture, session management, OOP, advanced databases, and modern CSS.',
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200',
       textColor: 'text-green-700'
     },
     {
       name: 'Object Oriented Programming',
-      description: 'Understand the core concepts of OOP and learn how to design reusable, scalable, and maintainable software.',
+      description: 'Explore OOP design concepts, threads, and event handling to build advanced applications with database and network integration.',
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-200',
       textColor: 'text-purple-700'
     },
     {
-      name: 'Rapid Application Development',
-      description: 'Learn how to quickly design, develop, and deploy modern applications using efficient frameworks.',
+      name: 'Project Management in Software Development',
+      description: 'Learn core principles of managing software projects, including planning, execution, control techniques, and methodologies for projects of varying scope.',
       bgColor: 'bg-pink-50',
       borderColor: 'border-pink-200',
       textColor: 'text-pink-700'
     },
     {
-      name: 'Web Programming',
-      description: 'Master front-end and back-end technologies to build dynamic, responsive, and user-friendly web applications.',
+      name: 'User Experience Design',
+      description: 'Learn UX principles and hands-on interface design through design sprints, persona development, and industry-relevant projects.',
       bgColor: 'bg-orange-50',
       borderColor: 'border-orange-200',
       textColor: 'text-orange-700'
     },
     {
-      name: 'Object Oriented Programming',
-      description: 'Understand the core concepts of OOP and learn how to design reusable, scalable, and maintainable software.',
+      name: 'Networking Essentials',
+      description: 'Learn core networking concepts, protocols, and security while gaining hands-on skills to plan and implement small networks.',
       bgColor: 'bg-yellow-50',
       borderColor: 'border-yellow-200',
       textColor: 'text-yellow-700'
