@@ -1,81 +1,50 @@
-function Courses() {
-  const courses = [
-    {
-      name: 'Rapid Application Development',
-      description: 'Learn programming techniques in a rapid application development environment to build GUI and data-driven applications using forms, controls, and user-defined classes.',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      textColor: 'text-blue-700'
-    },
-    {
-      name: 'Web Programming',
-      description: 'Learn to build secure, interactive web applications using three-tier architecture, session management, OOP, advanced databases, and modern CSS.',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200',
-      textColor: 'text-green-700'
-    },
-    {
-      name: 'Object Oriented Programming',
-      description: 'Explore OOP design concepts, threads, and event handling to build advanced applications with database and network integration.',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200',
-      textColor: 'text-purple-700'
-    },
-    {
-      name: 'Project Management in Software Development',
-      description: 'Learn core principles of managing software projects, including planning, execution, control techniques, and methodologies for projects of varying scope.',
-      bgColor: 'bg-pink-50',
-      borderColor: 'border-pink-200',
-      textColor: 'text-pink-700'
-    },
-    {
-      name: 'User Experience Design',
-      description: 'Learn UX principles and hands-on interface design through design sprints, persona development, and industry-relevant projects.',
-      bgColor: 'bg-orange-50',
-      borderColor: 'border-orange-200',
-      textColor: 'text-orange-700'
-    },
-    {
-      name: 'Networking Essentials',
-      description: 'Learn core networking concepts, protocols, and security while gaining hands-on skills to plan and implement small networks.',
-      bgColor: 'bg-yellow-50',
-      borderColor: 'border-yellow-200',
-      textColor: 'text-yellow-700'
-    },
-    {
-      name: 'Internet of Things',
-      description: 'Explore IoT by building simple interfaces between computers and devices, gaining insight into architecture, networking, and device control.',
-      bgColor: 'bg-teal-50',
-      borderColor: 'border-teal-200',
-      textColor: 'text-teal-700'
-    },
-    {
-      name: 'Math for the Computer Industry',
-      description: 'Gain practical math skills for computing, including number bases, set theory, logic, Boolean algebra, and basic statistics for IT.',
-      bgColor: 'bg-stone-50',
-      borderColor: 'border-stone-200',
-      textColor: 'text-stone-700'
-    },
-    {
-      name: 'Essential Skills for Teams Collaboration',
-      description: 'Develop essential teamwork skills, including communication, conflict resolution, and collaboration techniques for effective team dynamics.',
-      bgColor: 'bg-indigo-50',
-      borderColor: 'border-indigo-200',
-      textColor: 'text-indigo-700'
-    }
-  ];
+import coursesData from "../../data/courses.json";
+
+function Courses({ limit }) {
+  // Define a map of Tailwind color classes (guaranteed to work)
+  const colorMap = {
+    blue: "bg-blue-50 border-blue-200 text-blue-700",
+    green: "bg-green-50 border-green-200 text-green-700",
+    purple: "bg-purple-50 border-purple-200 text-purple-700",
+    yellow: "bg-yellow-50 border-yellow-200 text-yellow-700",
+    red: "bg-red-50 border-red-200 text-red-700",
+    indigo: "bg-indigo-50 border-indigo-200 text-indigo-700",
+    cyan: "bg-cyan-50 border-cyan-200 text-cyan-700",
+    orange: "bg-orange-50 border-orange-200 text-orange-700",
+    teal: "bg-teal-50 border-teal-200 text-teal-700",
+    pink: "bg-pink-50 border-pink-200 text-pink-700",
+    emerald: "bg-emerald-50 border-emerald-200 text-emerald-700",
+    violet: "bg-violet-50 border-violet-200 text-violet-700",
+    rose: "bg-rose-50 border-rose-200 text-rose-700",
+    amber: "bg-amber-50 border-amber-200 text-amber-700",
+    lime: "bg-lime-50 border-lime-200 text-lime-700",
+    slate: "bg-slate-50 border-slate-200 text-slate-700",
+    fuchsia: "bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700",
+    sky: "bg-sky-50 border-sky-200 text-sky-700",
+    stone: "bg-stone-50 border-stone-200 text-stone-700",
+    neutral: "bg-neutral-50 border-neutral-200 text-neutral-700",
+  };
+
+  // Limit the number of displayed courses (e.g., 6 on Home)
+  const displayedCourses = limit ? coursesData.slice(0, limit) : coursesData;
 
   return (
-    <section className='bg-white py-12'>
-      <div className='mx-auto max-w-6xl px-6 text-center'>
-        <h2 className='mb-2 text-3xl font-bold text-gray-800'>Courses</h2>
-        <p className='mb-10 text-gray-600'>Explore the key courses that form the foundation of your software development journey.</p>
+    <section id="courses" className="bg-white py-12">
+      <div className="max-w-6xl mx-auto px-6 text-center">
+        <h2 className="text-3xl font-bold text-gray-800 mb-2">Courses</h2>
+        <p className="text-gray-600 mb-10">
+          Explore the key courses that form the foundation of your software development journey.
+        </p>
 
-        <div className='mb-8 grid grid-cols-1 gap-8 sm:grid-cols-3'>
-          {courses.map((course, index) => (
-            <div key={index} className={`rounded-xl border ${course.borderColor} ${course.bgColor} p-6 shadow transition hover:shadow-lg`}>
-              <h3 className={`mb-2 text-xl font-semibold ${course.textColor}`}>{course.name}</h3>
-              <p className='text-sm text-gray-600'>{course.description}</p>
+        {/* Dynamic Course Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {displayedCourses.map((course) => (
+            <div
+              key={course.id}
+              className={`${colorMap[course.color] || "bg-gray-50 border-gray-200 text-gray-700"} rounded-xl p-6 shadow hover:shadow-lg transition`}
+            >
+              <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+              <p className="text-sm text-gray-600">{course.description}</p>
             </div>
           ))}
         </div>
