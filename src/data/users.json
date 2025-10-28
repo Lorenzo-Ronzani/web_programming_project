@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "username": "wesley",
+    "password": "wesley",
+    "firstName": "Wesley",
+    "lastName": "Lomazzi",
+    "photo": "https://i.pravatar.cc/100?img=1"
+  },
+  {
+    "id": 2,
+    "username": "lorenzo",
+    "password": "lorenzo",
+    "firstName": "Lorenzo",
+    "lastName": "Ronzani",
+    "photo": "https://i.pravatar.cc/100?img=2"
+  },
+  {
+    "id": 3,
+    "username": "gabriel",
+    "password": "gabriel",
+    "firstName": "Gabriel",
+    "lastName": "Passarelli",
+    "photo": "https://i.pravatar.cc/100?img=3"
+  },
+  {
+    "id": 4,
+    "username": "renato",
+    "password": "renato",
+    "firstName": "Renato",
+    "lastName": "Gomes da Paz",
+    "photo": "https://i.pravatar.cc/100?img=4"
+  },
+  {
+    "id": 5,
+    "username": "daniela",
+    "password": "daniela",
+    "firstName": "Daniela",
+    "lastName": "Freire",
+    "photo": "https://i.pravatar.cc/100?img=4"
+  }
+]
