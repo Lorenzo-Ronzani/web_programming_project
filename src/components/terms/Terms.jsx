@@ -1,8 +1,9 @@
 import { useState } from 'react';
 function Terms() {
   return (
-    <section id="terms" className='bg-white py-20'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <section id='terms' className='bg-gray-50 py-20'>
+      ``
+      <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
         <div className='mb-16 text-center'>
           <h2 className='mb-4 text-4xl font-bold text-gray-900'>Academic Terms</h2>
           <p className='text-xl text-gray-600'>Plan your studies with our flexible term schedule</p>
