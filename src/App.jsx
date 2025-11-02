@@ -76,6 +76,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/courseadd"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <CourseEdit />
+              </ProtectedRoute>
+            }
+          />          
         </Routes>
       </Router>
     </AuthProvider>

@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 
 const DashboardAdmin = () => {
   const { user } = useAuth();
-  const navigate = useNavigate(); // must be inside the component
+  const navigate = useNavigate();
 
   // --- Quick stats (safe checks with fallbacks)
   const totalStudents = users?.filter((u) => u.role === "student").length || 0;
@@ -50,7 +50,7 @@ const DashboardAdmin = () => {
         {/* Welcome message */}
         <div className="bg-white shadow-md rounded-2xl p-6 mb-8">
           <h2 className="text-2xl font-semibold text-gray-900">
-            Welcome, {user?.firstName || "Admin"} {user?.lastName || "Admin"}
+            Welcome, {user?.firstName || "Admin"} {user?.lastName || ""}
           </h2>
           <p className="text-gray-500 mt-1">
             Manage students, courses, and enrollment data.
@@ -102,7 +102,6 @@ const Card = ({ label, value, sub }) => (
   Displays only users with the "student" role
 */
 const StudentsTable = ({ students, coursesUsers }) => {
-  // Filter to include only users with role "student"
   const filteredStudents = (students || []).filter((s) => s.role === "student");
 
   return (
@@ -116,6 +115,7 @@ const StudentsTable = ({ students, coursesUsers }) => {
             <th className="py-2 px-3 text-gray-600">Student ID</th>
             <th className="py-2 px-3 text-gray-600">Name</th>
             <th className="py-2 px-3 text-gray-600">Email</th>
+            <th className="py-2 px-3 text-gray-600">Status</th>
             <th className="py-2 px-3 text-gray-600">Courses</th>
           </tr>
         </thead>
@@ -139,6 +139,9 @@ const StudentsTable = ({ students, coursesUsers }) => {
                   {student.email}
                 </td>
                 <td className="py-2 px-3 text-sm text-gray-700">
+                  {student.status}
+                </td>
+                <td className="py-2 px-3 text-sm text-gray-700">
                   {enrollment?.courses?.length || 0}
                 </td>
               </tr>
@@ -154,8 +157,8 @@ const StudentsTable = ({ students, coursesUsers }) => {
   CoursesTable Component
   -------------------------
   Displays all available courses with:
-  - Responsive header (search beside or below title)
-  - Search by course code or title
+  - Responsive header (title, search, and Add button)
+  - Search by code or title
   - Edit button to navigate to /courseedit/:code
 */
 const CoursesTable = ({ courses, navigate }) => {
@@ -170,25 +173,40 @@ const CoursesTable = ({ courses, navigate }) => {
     );
   });
 
-  // Go to edit page
+  // Navigate to edit course page
   const handleEdit = (course) => {
     navigate(`/courseedit/${course.code}`);
   };
 
+  // Navigate to add course page
+  const handleAddCourse = () => {
+    navigate("/courseadd");
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
-      {/* Header: title + search (stack on mobile, inline on desktop) */}
+      {/* Header section: title + search + add button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Courses List&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        {/* Search beside on desktop, below on mobile */}
-        <input
-          type="text"
-          placeholder="Search by code or title..."
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-full sm:w-64"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800">Courses List</h3>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+          {/* Search field */}
+          <input
+            type="text"
+            placeholder="Search by code or title..."
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-full sm:w-64"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+
+          {/* Add Course button */}
+          <button
+            onClick={handleAddCourse}
+            className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition"
+          >
+            + Add Course
+          </button>
+        </div>
       </div>
 
       {/* Courses table */}
@@ -205,7 +223,10 @@ const CoursesTable = ({ courses, navigate }) => {
         </thead>
         <tbody>
           {filteredCourses.map((course) => (
-            <tr key={course.code} className="border-b hover:bg-gray-50 transition">
+            <tr
+              key={course.code}
+              className="border-b hover:bg-gray-50 transition"
+            >
               <td className="py-2 px-3 text-sm text-gray-700">{course.code}</td>
               <td className="py-2 px-3 text-sm text-gray-700">{course.title}</td>
               <td className="py-2 px-3 text-sm text-gray-700">{course.instructor}</td>

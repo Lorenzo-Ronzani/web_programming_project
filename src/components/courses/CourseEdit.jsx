@@ -7,57 +7,62 @@ import coursesData from "../../data/courses.json";
 /*
   CourseEdit.jsx
   -------------------------
-  - Displays a form for editing a specific course
-  - Loads course data using the code parameter from URL
-  - Allows admin to edit course info and save changes
-  - Includes checkbox for course status (active/inactive)
+  - Reused for both editing and adding a course
+  - If "code" param exists → Edit mode
+  - If no "code" → Add mode
 */
 
 const CourseEdit = () => {
-  const { code } = useParams(); // Course code from URL
+  const { code } = useParams(); // Course code from URL (optional)
   const navigate = useNavigate();
 
-  const [course, setCourse] = useState(null);
+  const isEditMode = Boolean(code); // true if editing
+  const [course, setCourse] = useState({
+    code: "",
+    title: "",
+    instructor: "",
+    credits: "",
+    available: "",
+    description: "",
+    status: "inactive",
+  });
 
-  // ✅ Load the selected course based on the URL parameter
+  // ✅ Load existing course if in edit mode
   useEffect(() => {
-    const foundCourse = coursesData.find((c) => c.code === code);
-    if (foundCourse) {
-      setCourse(foundCourse);
+    if (isEditMode) {
+      const foundCourse = coursesData.find((c) => c.code === code);
+      if (foundCourse) {
+        setCourse(foundCourse);
+      }
     }
-  }, [code]);
+  }, [code, isEditMode]);
 
-  // ✅ Handle input changes for text/number/textarea fields
+  // ✅ Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCourse((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle checkbox change (status field)
+  // ✅ Handle checkbox change
   const handleStatusChange = (e) => {
-    const isChecked = e.target.checked;
     setCourse((prev) => ({
       ...prev,
-      status: isChecked ? "active" : "inactive",
+      status: e.target.checked ? "active" : "inactive",
     }));
   };
 
-  // ✅ Simulate a save operation (could be replaced with API call)
+  // ✅ Save or add new course
   const handleSave = (e) => {
     e.preventDefault();
-    alert(
-      `✅ Course "${course.title}" has been updated successfully!\nStatus: ${course.status}`
-    );
+
+    if (isEditMode) {
+      alert(`✅ Course "${course.title}" has been updated successfully!`);
+    } else {
+      alert(`✅ New course "${course.title}" has been added successfully!`);
+    }
+
     navigate("/dashboardadmin");
   };
-
-  if (!course) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-gray-600 text-lg">Loading course data...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
@@ -66,13 +71,12 @@ const CourseEdit = () => {
       <main className="flex-1 container mx-auto px-6 py-8">
         <div className="bg-white shadow-md rounded-2xl p-6 max-w-3xl mx-auto">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-            Edit Course: {course.code}
+            {isEditMode ? `Edit Course: ${course.code}` : "Add New Course"}
           </h2>
 
           <form onSubmit={handleSave} className="space-y-4">
-            {/* Title + Status (checkbox side by side) */}
+            {/* Title + Status */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-              {/* Title field */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Title
@@ -86,8 +90,6 @@ const CourseEdit = () => {
                   required
                 />
               </div>
-
-              {/* Status checkbox */}
               <div className="flex items-center mt-6 sm:mt-8">
                 <input
                   type="checkbox"
@@ -105,7 +107,7 @@ const CourseEdit = () => {
               </div>
             </div>
 
-            {/* Code field (read-only) */}
+            {/* Code field */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Code
@@ -114,12 +116,16 @@ const CourseEdit = () => {
                 type="text"
                 name="code"
                 value={course.code}
-                disabled
-                className="w-full bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 mt-1"
+                onChange={handleChange}
+                disabled={isEditMode} // only editable in Add mode
+                placeholder="Enter course code"
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 ${
+                  isEditMode ? "bg-gray-100" : "focus:ring-2 focus:ring-blue-500"
+                }`}
               />
             </div>
 
-            {/* Instructor field */}
+            {/* Instructor */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Instructor
@@ -133,7 +139,7 @@ const CourseEdit = () => {
               />
             </div>
 
-            {/* Credits and Available fields */}
+            {/* Credits & Available */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -161,7 +167,7 @@ const CourseEdit = () => {
               </div>
             </div>
 
-            {/* Description field */}
+            {/* Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Description
@@ -171,6 +177,7 @@ const CourseEdit = () => {
                 value={course.description}
                 onChange={handleChange}
                 rows="4"
+                placeholder="Enter course description"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               ></textarea>
             </div>
@@ -188,7 +195,7 @@ const CourseEdit = () => {
                 type="submit"
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
-                Save Changes
+                {isEditMode ? "Save Changes" : "Add Course"}
               </button>
             </div>
           </form>
