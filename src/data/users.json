@@ -1,5 +1,17 @@
 [
   {
+    "id": 0,
+    "student_id": "ST0000000",
+    "username": "admin",
+    "password": "admin",
+    "firstName": "System",
+    "lastName": "Administrator",
+    "email": "admin@bowportal.com",
+    "photo": "https://i.pravatar.cc/100?img=11",
+    "role": "admin",
+    "status": "active"
+  },
+  {
     "id": 1,
     "student_id": "ST0002514",
     "username": "wesley",
@@ -60,15 +72,15 @@
     "status": "active"
   },
   {
-    "id": 6,
-    "student_id": "ST0000000",
-    "username": "admin",
-    "password": "admin",
-    "firstName": "System",
-    "lastName": "Administrator",
-    "email": "admin@bowportal.com",
-    "photo": "https://i.pravatar.cc/100?img=11",
-    "role": "admin",
-    "status": "active"
+    "id": 7,
+    "student_id": "ST0002519",
+    "username": "user",
+    "password": "user",
+    "firstName": "User",
+    "lastName": "Test Validation",
+    "email": "user_test@example.com",
+    "photo": "https://i.pravatar.cc/100?img=100",
+    "role": "student",
+    "status": "inactive"
   }
 ]

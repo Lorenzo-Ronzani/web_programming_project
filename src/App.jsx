@@ -8,8 +8,12 @@ import ProgramsAll from "./pages/ProgramsAll";
 import Courses from "./components/courses/Courses";
 import CoursesAll from "./pages/CoursesAll";
 import Terms from "./components/terms/Terms";
+
 import DashboardUser from "./components/dashboards/DashboardUser";
 import DashboardAdmin from "./components/dashboards/DashboardAdmin";
+import ManageUsers from "./components/users/ManageUsers";
+import UserForm from "./components/users/UserForm";
+
 import CourseRegistration from "./components/courses/CourseRegistration";
 import CourseEdit from "./components/courses/CourseEdit";
 
@@ -19,6 +23,7 @@ import RegisterPage from "./pages/RegisterPage";
 
 // ✅ ProtectedRoute
 import ProtectedRoute from "./components/routes/ProtectedRoute";
+import { User } from "lucide-react";
 
 /*
   App.jsx
@@ -53,6 +58,24 @@ function App() {
             }
           />
           <Route
+            path="/useradd"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <UserForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/useredit/:id"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <UserForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/coursesregistration"
             element={
               <ProtectedRoute allowedRoles={["student", "admin"]}>
@@ -68,6 +91,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/manageusers"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <ManageUsers />
+              </ProtectedRoute>
+            }
+          />          
           <Route
             path="/courseedit/:code"
             element={

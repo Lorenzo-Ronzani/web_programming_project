@@ -7,6 +7,7 @@ import usersData from "../data/users.json";
   - Manages user login/logout globally
   - Loads user from localStorage if session exists
   - Exposes login(), logout(), and user info
+  - Blocks login for inactive users
 */
 
 const AuthContext = createContext();
@@ -27,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Login function
+  // ✅ Enhanced login function — now checks status
   const login = (username, password) => {
     const foundUser = usersData.find(
       (u) =>
@@ -35,13 +36,20 @@ export const AuthProvider = ({ children }) => {
         u.password === password
     );
 
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem("currentUser", JSON.stringify(foundUser));
-      return true;
+    if (!foundUser) {
+      // Invalid credentials
+      return { success: false, message: "Invalid username or password." };
     }
 
-    return false;
+    if (foundUser.status !== "active") {
+      // Prevent login if user is inactive
+      return { success: false, message: "Your account is inactive. Please contact the administrator." };
+    }
+
+    // ✅ Login success
+    setUser(foundUser);
+    localStorage.setItem("currentUser", JSON.stringify(foundUser));
+    return { success: true };
   };
 
   // Logout function

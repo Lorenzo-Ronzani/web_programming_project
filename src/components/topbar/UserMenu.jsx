@@ -46,7 +46,7 @@ function UserMenu() {
       // Admin-specific menu
       menuItems = [
         { label: "Admin Dashboard", href: "/dashboardadmin" },
-        { label: "Manage Users", href: "/admin/users" },
+        { label: "Manage Users", href: "/manageusers" },
         { label: "Settings", href: "/admin/settings" },
         { label: "Logout", action: handleLogout, danger: true },
       ];

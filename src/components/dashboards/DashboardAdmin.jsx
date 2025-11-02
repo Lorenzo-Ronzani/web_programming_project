@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import TopBar from "../topbar/TopBar";
 import Footer from "../footer/Footer";
-import users from "../../data/users.json";
-import courses from "../../data/courses.json";
+import usersData from "../../data/users.json";
+import coursesData from "../../data/courses.json";
 import coursesUsers from "../../data/courses_users.json";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -12,20 +12,24 @@ import { useNavigate } from "react-router-dom";
   -------------------------
   - Displays admin overview with key statistics
   - Manages students, courses, and enrollments (mock JSON data)
-  - Responsive layout; safe guards for undefined data
+  - Adds interactive status toggle for courses
 */
 
 const DashboardAdmin = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // --- Quick stats (safe checks with fallbacks)
+  // Local state for dynamic updates (mock simulation)
+  const [users, setUsers] = useState(usersData);
+  const [courses, setCourses] = useState(coursesData);
+
+  // --- Quick stats
   const totalStudents = users?.filter((u) => u.role === "student").length || 0;
   const totalCourses = courses?.length || 0;
   const totalEnrollments =
     coursesUsers?.reduce((acc, s) => acc + (s.courses?.length || 0), 0) || 0;
 
-  // --- Average progress across all students (avoid division by zero)
+  // --- Average progress
   const avgProgress =
     coursesUsers?.length > 0
       ? Math.round(
@@ -71,23 +75,22 @@ const DashboardAdmin = () => {
         </div>
 
         {/* Data tables section */}
-        <CoursesTable courses={courses} navigate={navigate} />
+        <CoursesTable
+          courses={courses}
+          setCourses={setCourses}
+          navigate={navigate}
+        />
         <div className="mt-6">
           <StudentsTable students={users} coursesUsers={coursesUsers} />
         </div>
       </main>
 
-      {/* Footer */}
       <Footer />
     </div>
   );
 };
 
-/* 
-  Card Component
-  -----------------
-  Displays a simple overview metric (e.g., total students)
-*/
+/* Card Component */
 const Card = ({ label, value, sub }) => (
   <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
     <h4 className="text-2xl font-bold text-gray-800">{value}</h4>
@@ -96,11 +99,7 @@ const Card = ({ label, value, sub }) => (
   </div>
 );
 
-/*
-  StudentsTable Component
-  -------------------------
-  Displays only users with the "student" role
-*/
+/* Students Table */
 const StudentsTable = ({ students, coursesUsers }) => {
   const filteredStudents = (students || []).filter((s) => s.role === "student");
 
@@ -138,8 +137,16 @@ const StudentsTable = ({ students, coursesUsers }) => {
                 <td className="py-2 px-3 text-sm text-gray-700">
                   {student.email}
                 </td>
-                <td className="py-2 px-3 text-sm text-gray-700">
-                  {student.status}
+                <td className="py-2 px-3 text-sm">
+                  <span
+                    className={`px-3 py-1 text-xs font-medium rounded-full transition ${
+                      student.status === "active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {student.status === "active" ? "Active" : "Inactive"}
+                  </span>
                 </td>
                 <td className="py-2 px-3 text-sm text-gray-700">
                   {enrollment?.courses?.length || 0}
@@ -153,18 +160,24 @@ const StudentsTable = ({ students, coursesUsers }) => {
   );
 };
 
-/*
-  CoursesTable Component
-  -------------------------
-  Displays all available courses with:
-  - Responsive header (title, search, and Add button)
-  - Search by code or title
-  - Edit button to navigate to /courseedit/:code
-*/
-const CoursesTable = ({ courses, navigate }) => {
+/* Courses Table */
+const CoursesTable = ({ courses, setCourses, navigate }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Filter courses by title or code (case-insensitive)
+  // ✅ Toggle status dynamically
+  const handleToggleStatus = (code) => {
+    const updated = courses.map((course) =>
+      course.code === code
+        ? {
+            ...course,
+            status: course.status === "active" ? "inactive" : "active",
+          }
+        : course
+    );
+    setCourses(updated);
+  };
+
+  // Filter courses
   const filteredCourses = (courses || []).filter((course) => {
     const q = searchTerm.toLowerCase();
     return (
@@ -173,24 +186,17 @@ const CoursesTable = ({ courses, navigate }) => {
     );
   });
 
-  // Navigate to edit course page
-  const handleEdit = (course) => {
-    navigate(`/courseedit/${course.code}`);
-  };
-
-  // Navigate to add course page
-  const handleAddCourse = () => {
-    navigate("/courseadd");
-  };
+  // Navigate to edit / add course
+  const handleEdit = (course) => navigate(`/courseedit/${course.code}`);
+  const handleAddCourse = () => navigate("/courseadd");
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
-      {/* Header section: title + search + add button */}
+      {/* Header section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <h3 className="text-lg font-semibold text-gray-800">Courses List</h3>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-          {/* Search field */}
           <input
             type="text"
             placeholder="Search by code or title..."
@@ -198,8 +204,6 @@ const CoursesTable = ({ courses, navigate }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-
-          {/* Add Course button */}
           <button
             onClick={handleAddCourse}
             className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition"
@@ -209,7 +213,7 @@ const CoursesTable = ({ courses, navigate }) => {
         </div>
       </div>
 
-      {/* Courses table */}
+      {/* Table */}
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="border-b">
@@ -223,15 +227,23 @@ const CoursesTable = ({ courses, navigate }) => {
         </thead>
         <tbody>
           {filteredCourses.map((course) => (
-            <tr
-              key={course.code}
-              className="border-b hover:bg-gray-50 transition"
-            >
+            <tr key={course.code} className="border-b hover:bg-gray-50 transition">
               <td className="py-2 px-3 text-sm text-gray-700">{course.code}</td>
               <td className="py-2 px-3 text-sm text-gray-700">{course.title}</td>
               <td className="py-2 px-3 text-sm text-gray-700">{course.instructor}</td>
               <td className="py-2 px-3 text-sm text-gray-700">{course.credits}</td>
-              <td className="py-2 px-3 text-sm text-gray-700">{course.status}</td>
+              <td className="py-2 px-3 text-sm">
+                <button
+                  onClick={() => handleToggleStatus(course.code)}
+                  className={`px-3 py-1 text-xs font-medium rounded-full transition ${
+                    course.status === "active"
+                      ? "bg-green-100 text-green-700 hover:bg-green-200"
+                      : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                  }`}
+                >
+                  {course.status === "active" ? "Active" : "Inactive"}
+                </button>
+              </td>
               <td className="py-2 px-3 text-sm text-right">
                 <button
                   onClick={() => handleEdit(course)}
@@ -247,9 +259,7 @@ const CoursesTable = ({ courses, navigate }) => {
 
       {/* Empty state */}
       {filteredCourses.length === 0 && (
-        <p className="text-sm text-gray-500 mt-4 text-center">
-          No courses found.
-        </p>
+        <p className="text-sm text-gray-500 mt-4 text-center">No courses found.</p>
       )}
     </div>
   );
