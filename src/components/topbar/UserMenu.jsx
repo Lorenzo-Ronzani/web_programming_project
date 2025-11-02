@@ -1,20 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext"; // ✅ Auth integration
+import { useAuth } from "../../context/AuthContext";
 
 /*
   UserMenu Component
   ---------------------
-  - Displays user info (avatar + name)
-  - Dynamically changes the menu based on login state and user role
-  - Redirects to homepage after logout
+  - Displays user avatar, name, and role
+  - Menu dynamically changes based on the user's role
+  - Unified route for Settings (/settings)
+  - Clean, role-based navigation with logout
 */
 
 function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
-  const { user, logout } = useAuth(); // ✅ From AuthContext
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   // Toggle dropdown visibility
@@ -31,39 +32,41 @@ function UserMenu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ Handle logout and redirect to home
+  // ✅ Logout and redirect
   const handleLogout = () => {
     logout();
     setIsOpen(false);
-    navigate("/"); // Redirect to main page
+    navigate("/");
   };
 
-  // Define menu items dynamically (based on role)
+  // ✅ Define menu items dynamically
   let menuItems = [];
 
   if (user) {
-    if (user.role === "admin") {
-      // Admin-specific menu
-      menuItems = [
-        { label: "Admin Dashboard", href: "/dashboardadmin" },
-        { label: "Manage Users", href: "/manageusers" },
-        { label: "Settings", href: "/admin/settings" },
-        { label: "Logout", action: handleLogout, danger: true },
-      ];
-    } else if (user.role === "student") {
-      // Student-specific menu
-      menuItems = [
-        { label: "User Dashboard", href: "/dashboarduser" },
-        { label: "Courses Registration", href: "/coursesregistration" },
-        { label: "Settings", href: "/user/settings" },
-        { label: "Logout", action: handleLogout, danger: true },
-      ];
-    } else {
-      // Unknown role fallback
-      menuItems = [{ label: "Logout", action: handleLogout, danger: true }];
+    switch (user.role) {
+      case "admin":
+        menuItems = [
+          { label: "Admin Dashboard", href: "/dashboardadmin" },
+          { label: "Manage Users", href: "/manageusers" },
+          { label: "Settings", href: "/settings" },
+          { label: "Logout", action: handleLogout, danger: true },
+        ];
+        break;
+
+      case "student":
+        menuItems = [
+          { label: "User Dashboard", href: "/dashboarduser" },
+          { label: "Courses Registration", href: "/coursesregistration" },
+          { label: "Settings", href: "/settings" },
+          { label: "Logout", action: handleLogout, danger: true },
+        ];
+        break;
+
+      default:
+        menuItems = [{ label: "Logout", action: handleLogout, danger: true }];
+        break;
     }
   } else {
-    // Guest (not logged in)
     menuItems = [
       { label: "Login", href: "/login" },
       { label: "Register", href: "/register" },
@@ -72,23 +75,22 @@ function UserMenu() {
 
   return (
     <div ref={menuRef} className="relative inline-block text-left">
-      {/* Avatar + Name button */}
+      {/* Avatar + Name */}
       <button
         onClick={toggleMenu}
         className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition"
       >
-        {/* User Avatar (dynamic) */}
+        {/* Avatar */}
         <img
           src={
-            user
-              ? user.photo
-              : "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            user?.photo ||
+            "https://cdn-icons-png.flaticon.com/512/149/149071.png"
           }
           alt="User Avatar"
           className="h-9 w-9 rounded-full object-cover border border-gray-300"
         />
 
-        {/* User name and role */}
+        {/* User Info */}
         <div className="flex flex-col items-start leading-tight text-left">
           <span className="text-sm font-semibold text-gray-800">
             {user ? user.firstName : "Guest"}
@@ -97,12 +99,11 @@ function UserMenu() {
             {user
               ? user.role === "admin"
                 ? "Administrator"
-                : "Student: " + user.student_id
-              : "Not logged in"}              
+                : `Student: ${user.student_id}`
+              : "Not logged in"}
           </span>
         </div>
 
-        {/* Dropdown icon */}
         <ChevronDown
           className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -110,7 +111,7 @@ function UserMenu() {
         />
       </button>
 
-      {/* Dropdown menu */}
+      {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
           <ul className="py-2 text-sm text-gray-700">
@@ -119,6 +120,7 @@ function UserMenu() {
                 {item.href ? (
                   <Link
                     to={item.href}
+                    onClick={() => setIsOpen(false)}
                     className={`block px-4 py-2 transition ${
                       item.danger
                         ? "text-red-600 hover:bg-red-100"
@@ -126,7 +128,6 @@ function UserMenu() {
                         ? "text-gray-400 cursor-not-allowed"
                         : "hover:bg-gray-100"
                     }`}
-                    onClick={() => setIsOpen(false)}
                   >
                     {item.label}
                   </Link>
