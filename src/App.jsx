@@ -11,6 +11,7 @@ import Terms from "./components/terms/Terms";
 import DashboardUser from "./components/dashboards/DashboardUser";
 import DashboardAdmin from "./components/dashboards/DashboardAdmin";
 import CourseRegistration from "./components/courses/CourseRegistration";
+import CourseEdit from "./components/courses/CourseEdit";
 
 import MainContent from "./pages/MainContent";
 import LoginPage from "./pages/LoginPage";
@@ -64,6 +65,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <DashboardAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courseedit/:code"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <CourseEdit />
               </ProtectedRoute>
             }
           />

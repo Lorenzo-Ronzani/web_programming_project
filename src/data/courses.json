@@ -10,7 +10,8 @@
     "credits": 3,
     "available": 15,
     "total": 25,
-    "description": "Learn how to quickly design, develop, and deploy modern applications using efficient frameworks and tools."
+    "description": "Learn how to quickly design, develop, and deploy modern applications using efficient frameworks and tools.",
+    "status": "active"
   },
   {
     "id": 2,
@@ -23,7 +24,8 @@
     "credits": 3,
     "available": 10,
     "total": 25,
-    "description": "Master front-end and back-end technologies to build dynamic, responsive, and user-friendly web applications."
+    "description": "Master front-end and back-end technologies to build dynamic, responsive, and user-friendly web applications.",
+    "status": "inactive"
   },
   {
     "id": 3,
@@ -36,7 +38,8 @@
     "credits": 3,
     "available": 12,
     "total": 25,
-    "description": "Understand the principles of OOP and learn to design reusable, scalable, and maintainable software using C# and Java."
+    "description": "Understand the principles of OOP and learn to design reusable, scalable, and maintainable software using C# and Java.",
+    "status": "active"
   },
   {
     "id": 4,
@@ -49,7 +52,8 @@
     "credits": 3,
     "available": 9,
     "total": 25,
-    "description": "Design relational databases, write SQL queries, and manage data efficiently using MySQL and SQL Server."
+    "description": "Design relational databases, write SQL queries, and manage data efficiently using MySQL and SQL Server.",
+    "status": "active"
   },
   {
     "id": 5,
@@ -62,7 +66,8 @@
     "credits": 3,
     "available": 8,
     "total": 25,
-    "description": "Learn how computer networks operate, how data travels, and how to configure secure connections between systems."
+    "description": "Learn how computer networks operate, how data travels, and how to configure secure connections between systems.",
+    "status": "active"
   },
   {
     "id": 6,
@@ -75,7 +80,8 @@
     "credits": 3,
     "available": 5,
     "total": 25,
-    "description": "Develop mobile apps for Android and iOS platforms using frameworks like React Native and Flutter."
+    "description": "Develop mobile apps for Android and iOS platforms using frameworks like React Native and Flutter.",
+    "status": "active"
   },
   {
     "id": 7,
@@ -88,7 +94,8 @@
     "credits": 3,
     "available": 18,
     "total": 25,
-    "description": "Explore cloud platforms such as AWS and Azure, and learn to deploy scalable and reliable web services."
+    "description": "Explore cloud platforms such as AWS and Azure, and learn to deploy scalable and reliable web services.",
+    "status": "active"
   },
   {
     "id": 8,
@@ -101,7 +108,8 @@
     "credits": 3,
     "available": 6,
     "total": 25,
-    "description": "Understand modern security threats and learn strategies for protecting applications, networks, and users."
+    "description": "Understand modern security threats and learn strategies for protecting applications, networks, and users.",
+    "status": "active"
   },
   {
     "id": 9,
@@ -114,7 +122,8 @@
     "credits": 3,
     "available": 20,
     "total": 25,
-    "description": "Learn manual and automated testing techniques to ensure the quality, performance, and security of software systems."
+    "description": "Learn manual and automated testing techniques to ensure the quality, performance, and security of software systems.",
+    "status": "active"
   },
   {
     "id": 10,
@@ -127,7 +136,8 @@
     "credits": 3,
     "available": 11,
     "total": 25,
-    "description": "Use Python and data visualization tools like Power BI to analyze and present meaningful business insights."
+    "description": "Use Python and data visualization tools like Power BI to analyze and present meaningful business insights.",
+    "status": "active"
   },
   {
     "id": 11,
@@ -140,7 +150,8 @@
     "credits": 3,
     "available": 7,
     "total": 25,
-    "description": "Understand the principles of continuous integration, delivery, and deployment using modern DevOps pipelines."
+    "description": "Understand the principles of continuous integration, delivery, and deployment using modern DevOps pipelines.",
+    "status": "active"
   },
   {
     "id": 12,
@@ -153,7 +164,8 @@
     "credits": 3,
     "available": 19,
     "total": 25,
-    "description": "Explore machine learning concepts, neural networks, and AI tools used in modern applications."
+    "description": "Explore machine learning concepts, neural networks, and AI tools used in modern applications.",
+    "status": "active"
   },
   {
     "id": 13,
@@ -166,7 +178,8 @@
     "credits": 3,
     "available": 10,
     "total": 25,
-    "description": "Design accessible and user-friendly web interfaces following WCAG and UX best practices."
+    "description": "Design accessible and user-friendly web interfaces following WCAG and UX best practices.",
+    "status": "active"
   },
   {
     "id": 14,
@@ -179,7 +192,8 @@
     "credits": 3,
     "available": 4,
     "total": 25,
-    "description": "Learn agile and scrum methodologies, project planning, and team collaboration for software development."
+    "description": "Learn agile and scrum methodologies, project planning, and team collaboration for software development.",
+    "status": "active"
   },
   {
     "id": 15,
@@ -192,7 +206,8 @@
     "credits": 3,
     "available": 13,
     "total": 25,
-    "description": "Design, document, and consume RESTful and GraphQL APIs for seamless data exchange between systems."
+    "description": "Design, document, and consume RESTful and GraphQL APIs for seamless data exchange between systems.",
+    "status": "active"
   },
   {
     "id": 16,
@@ -205,7 +220,8 @@
     "credits": 3,
     "available": 16,
     "total": 25,
-    "description": "Understand how operating systems manage memory, processes, and user interactions at a low level."
+    "description": "Understand how operating systems manage memory, processes, and user interactions at a low level.",
+    "status": "active"
   },
   {
     "id": 17,
@@ -218,7 +234,8 @@
     "credits": 3,
     "available": 3,
     "total": 25,
-    "description": "Learn ethical hacking techniques to identify vulnerabilities and strengthen system security."
+    "description": "Learn ethical hacking techniques to identify vulnerabilities and strengthen system security.",
+    "status": "active"
   },
   {
     "id": 18,
@@ -231,7 +248,8 @@
     "credits": 3,
     "available": 6,
     "total": 25,
-    "description": "Create 2D and 3D games using Unity and C#, exploring design principles and physics simulation."
+    "description": "Create 2D and 3D games using Unity and C#, exploring design principles and physics simulation.",
+    "status": "active"
   },
   {
     "id": 19,
@@ -244,7 +262,8 @@
     "credits": 3,
     "available": 8,
     "total": 25,
-    "description": "Understand software architecture principles and implement common design patterns for scalable systems."
+    "description": "Understand software architecture principles and implement common design patterns for scalable systems.",
+    "status": "active"
   },
   {
     "id": 20,
@@ -257,6 +276,7 @@
     "credits": 3,
     "available": 14,
     "total": 25,
-    "description": "Explore current trends like IoT, blockchain, and edge computing, and their impact on modern software systems."
+    "description": "Explore current trends like IoT, blockchain, and edge computing, and their impact on modern software systems.",
+    "status": "active"
   }
 ]
