@@ -1,0 +1,187 @@
+[
+  {
+    "student_id": "ST0002514",
+    "courses": [
+      {
+        "id": 1,
+        "title": "Rapid Application Development",
+        "code": "CS-310",
+        "credits": 3,
+        "instructor": "Dr. Alan Cooper",
+        "schedule": "TTH 11:00–12:30 PM"
+      },
+      {
+        "id": 5,
+        "title": "Network Essentials",
+        "code": "CS-350",
+        "credits": 3,
+        "instructor": "Prof. Radia Perlman",
+        "schedule": "TTH 2:00–3:30 PM"
+      },
+      {
+        "id": 12,
+        "title": "Artificial Intelligence Fundamentals",
+        "code": "CS-420",
+        "credits": 3,
+        "instructor": "Dr. Alan Turing",
+        "schedule": "MWF 9:00–10:00 AM"
+      },
+      {
+        "id": 17,
+        "title": "Ethical Hacking and Penetration Testing",
+        "code": "CS-470",
+        "credits": 3,
+        "instructor": "Dr. Kevin Mitnick",
+        "schedule": "TTH 9:00–10:30 AM"
+      }
+    ]
+  },
+  {
+    "student_id": "ST0002515",
+    "courses": [
+      {
+        "id": 2,
+        "title": "Web Programming",
+        "code": "CS-320",
+        "credits": 3,
+        "instructor": "Prof. Tim Berners-Lee",
+        "schedule": "MWF 9:00–10:00 AM"
+      },
+      {
+        "id": 8,
+        "title": "Cybersecurity Fundamentals",
+        "code": "CS-380",
+        "credits": 3,
+        "instructor": "Dr. Bruce Schneier",
+        "schedule": "MWF 1:00–2:00 PM"
+      },
+      {
+        "id": 14,
+        "title": "Software Project Management",
+        "code": "CS-440",
+        "credits": 3,
+        "instructor": "Dr. Winston Royce",
+        "schedule": "MWF 10:30–11:30 AM"
+      },
+      {
+        "id": 19,
+        "title": "Software Architecture & Design Patterns",
+        "code": "CS-490",
+        "credits": 3,
+        "instructor": "Dr. Erich Gamma",
+        "schedule": "TTH 10:30–12:00 PM"
+      }
+    ]
+  },
+  {
+    "student_id": "ST0002516",
+    "courses": [
+      {
+        "id": 3,
+        "title": "Object Oriented Programming",
+        "code": "CS-330",
+        "credits": 3,
+        "instructor": "Dr. Bjarne Stroustrup",
+        "schedule": "TTH 1:00–2:30 PM"
+      },
+      {
+        "id": 4,
+        "title": "Database Systems",
+        "code": "CS-340",
+        "credits": 3,
+        "instructor": "Dr. Edgar Codd",
+        "schedule": "MWF 10:00–11:00 AM"
+      },
+      {
+        "id": 9,
+        "title": "Software Testing & Quality Assurance",
+        "code": "CS-390",
+        "credits": 3,
+        "instructor": "Dr. Cem Kaner",
+        "schedule": "TTH 8:30–10:00 AM"
+      },
+      {
+        "id": 16,
+        "title": "Operating Systems Concepts",
+        "code": "CS-460",
+        "credits": 3,
+        "instructor": "Prof. Linus Torvalds",
+        "schedule": "MWF 8:00–9:00 AM"
+      },
+      {
+        "id": 20,
+        "title": "Emerging Technologies",
+        "code": "CS-500",
+        "credits": 3,
+        "instructor": "Dr. Satya Nadella",
+        "schedule": "MWF 3:30–4:30 PM"
+      }
+    ]
+  },
+  {
+    "student_id": "ST0002517",
+    "courses": [
+      {
+        "id": 6,
+        "title": "Mobile Application Development",
+        "code": "CS-360",
+        "credits": 3,
+        "instructor": "Dr. John Resig",
+        "schedule": "MWF 3:00–4:00 PM"
+      },
+      {
+        "id": 7,
+        "title": "Cloud Computing",
+        "code": "CS-370",
+        "credits": 3,
+        "instructor": "Dr. Werner Vogels",
+        "schedule": "TTH 10:00–11:30 AM"
+      },
+      {
+        "id": 10,
+        "title": "Data Analytics & Visualization",
+        "code": "CS-400",
+        "credits": 3,
+        "instructor": "Prof. Hans Rosling",
+        "schedule": "MWF 11:00–12:00 PM"
+      },
+      {
+        "id": 13,
+        "title": "Web Accessibility and UX Design",
+        "code": "CS-430",
+        "credits": 3,
+        "instructor": "Prof. Don Norman",
+        "schedule": "TTH 1:30–3:00 PM"
+      }
+    ]
+  },
+  {
+    "student_id": "ST0002518",
+    "courses": [
+      {
+        "id": 11,
+        "title": "DevOps Practices",
+        "code": "CS-410",
+        "credits": 3,
+        "instructor": "Dr. Patrick Debois",
+        "schedule": "TTH 3:00–4:30 PM"
+      },
+      {
+        "id": 15,
+        "title": "API Development and Integration",
+        "code": "CS-450",
+        "credits": 3,
+        "instructor": "Dr. Roy Fielding",
+        "schedule": "TTH 2:30–4:00 PM"
+      },
+      {
+        "id": 18,
+        "title": "Game Development Essentials",
+        "code": "CS-480",
+        "credits": 3,
+        "instructor": "Dr. John Carmack",
+        "schedule": "MWF 2:00–3:00 PM"
+      }
+    ]
+  }
+]

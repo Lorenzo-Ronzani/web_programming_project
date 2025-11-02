@@ -1,42 +1,74 @@
 [
   {
     "id": 1,
+    "student_id": "ST0002514",
     "username": "wesley",
     "password": "wesley",
     "firstName": "Wesley",
     "lastName": "Lomazzi",
-    "photo": "https://i.pravatar.cc/100?img=1"
+    "email": "wesley@example.com",
+    "photo": "https://i.pravatar.cc/100?img=1",
+    "role": "student",
+    "status": "active"
   },
   {
     "id": 2,
+    "student_id": "ST0002515",
     "username": "lorenzo",
     "password": "lorenzo",
     "firstName": "Lorenzo",
     "lastName": "Ronzani",
-    "photo": "https://i.pravatar.cc/100?img=10"
+    "email": "lorenzo@example.com",
+    "photo": "https://i.pravatar.cc/100?img=7",
+    "role": "student",
+    "status": "active"
   },
   {
     "id": 3,
+    "student_id": "ST0002516",
     "username": "gabriel",
     "password": "gabriel",
     "firstName": "Gabriel",
     "lastName": "Passarelli",
-    "photo": "https://i.pravatar.cc/100?img=3"
+    "email": "gabriel@example.com",
+    "photo": "https://i.pravatar.cc/100?img=3",
+    "role": "student",
+    "status": "active"
   },
   {
     "id": 4,
+    "student_id": "ST0002517",
     "username": "renato",
     "password": "renato",
     "firstName": "Renato",
     "lastName": "Gomes da Paz",
-    "photo": "https://i.pravatar.cc/100?img=4"
+    "email": "renato@example.com",
+    "photo": "https://i.pravatar.cc/100?img=4",
+    "role": "student",
+    "status": "active"
   },
   {
     "id": 5,
+    "student_id": "ST0002518",
     "username": "daniela",
     "password": "daniela",
     "firstName": "Daniela",
     "lastName": "Freire",
-    "photo": "https://i.pravatar.cc/100?img=4"
+    "email": "daniela@example.com",
+    "photo": "https://i.pravatar.cc/100?img=10",
+    "role": "student",
+    "status": "active"
+  },
+  {
+    "id": 6,
+    "student_id": "ST0000000",
+    "username": "admin",
+    "password": "admin",
+    "firstName": "System",
+    "lastName": "Administrator",
+    "email": "admin@bowportal.com",
+    "photo": "https://i.pravatar.cc/100?img=11",
+    "role": "admin",
+    "status": "active"
   }
 ]

@@ -6,9 +6,9 @@ import { useAuth } from "../../context/AuthContext"; // ✅ Auth integration
 /*
   UserMenu Component
   ---------------------
-  - Shows logged-in user info (name + photo)
-  - Displays dropdown menu for navigation / logout
-  - Redirects to login page if no user is logged in
+  - Displays user info (avatar + name)
+  - Dynamically changes the menu based on login state and user role
+  - Redirects to homepage after logout
 */
 
 function UserMenu() {
@@ -31,24 +31,44 @@ function UserMenu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Logout handler
+  // ✅ Handle logout and redirect to home
   const handleLogout = () => {
     logout();
     setIsOpen(false);
-    navigate("/"); // Redirect to main page after logout
+    navigate("/"); // Redirect to main page
   };
 
-  // Menu items (dynamic based on login state)
-  const menuItems = user
-    ? [
-        { label: "User Dashboard", href: "/dashboarduser" },
-        { label: "Admin Dashboard", href: "/dashboarduser" },
+  // Define menu items dynamically (based on role)
+  let menuItems = [];
+
+  if (user) {
+    if (user.role === "admin") {
+      // Admin-specific menu
+      menuItems = [
+        { label: "Admin Dashboard", href: "/dashboardadmin" },
+        { label: "Manage Users", href: "/admin/users" },
+        { label: "Settings", href: "/admin/settings" },
         { label: "Logout", action: handleLogout, danger: true },
-      ]
-    : [
-        { label: "Login", href: "/login" },
-        { label: "Register", href: "/register", disabled: false },
       ];
+    } else if (user.role === "student") {
+      // Student-specific menu
+      menuItems = [
+        { label: "User Dashboard", href: "/dashboarduser" },
+        { label: "Courses Registration", href: "/coursesregistration" },
+        { label: "Settings", href: "/user/settings" },
+        { label: "Logout", action: handleLogout, danger: true },
+      ];
+    } else {
+      // Unknown role fallback
+      menuItems = [{ label: "Logout", action: handleLogout, danger: true }];
+    }
+  } else {
+    // Guest (not logged in)
+    menuItems = [
+      { label: "Login", href: "/login" },
+      { label: "Register", href: "/register" },
+    ];
+  }
 
   return (
     <div ref={menuRef} className="relative inline-block text-left">
@@ -57,7 +77,7 @@ function UserMenu() {
         onClick={toggleMenu}
         className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 transition"
       >
-        {/* ✅ User Avatar (dynamic) */}
+        {/* User Avatar (dynamic) */}
         <img
           src={
             user
@@ -68,13 +88,17 @@ function UserMenu() {
           className="h-9 w-9 rounded-full object-cover border border-gray-300"
         />
 
-        {/* ✅ User name and role */}
+        {/* User name and role */}
         <div className="flex flex-col items-start leading-tight text-left">
           <span className="text-sm font-semibold text-gray-800">
             {user ? user.firstName : "Guest"}
           </span>
           <span className="text-xs text-gray-500">
-            {user ? user.lastName : "Not logged in"}
+            {user
+              ? user.role === "admin"
+                ? "Administrator"
+                : "Student: " + user.student_id
+              : "Not logged in"}              
           </span>
         </div>
 
@@ -88,7 +112,7 @@ function UserMenu() {
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
           <ul className="py-2 text-sm text-gray-700">
             {menuItems.map((item, index) => (
               <li key={index}>

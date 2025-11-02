@@ -3,33 +3,32 @@ import usersData from "../data/users.json";
 
 /*
   AuthContext
-  ---------------------
-  - Manages global authentication state (user info)
-  - Provides login() and logout() methods
-  - Persists user session in localStorage
-  - Accessible from any component using useAuth()
+  ------------------------
+  - Manages user login/logout globally
+  - Loads user from localStorage if session exists
+  - Exposes login(), logout(), and user info
 */
 
 const AuthContext = createContext();
 
-// Custom hook for easy access to AuthContext
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  // Holds the currently logged-in user
-  const [user, setUser] = useState(null);
+  // Start with undefined to detect loading state
+  const [user, setUser] = useState(undefined);
 
-  // Load user from localStorage (if already logged in)
+  // Load user session from localStorage (once)
   useEffect(() => {
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
+    } else {
+      setUser(null);
     }
   }, []);
 
-  // Handle login
+  // Login function
   const login = (username, password) => {
-    // Find matching user from mock JSON data
     const foundUser = usersData.find(
       (u) =>
         u.username.toLowerCase() === username.toLowerCase() &&
@@ -38,29 +37,21 @@ export const AuthProvider = ({ children }) => {
 
     if (foundUser) {
       setUser(foundUser);
-      localStorage.setItem("currentUser", JSON.stringify(foundUser)); // ✅ Save session
+      localStorage.setItem("currentUser", JSON.stringify(foundUser));
       return true;
     }
 
     return false;
   };
 
-  // Handle logout
+  // Logout function
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("currentUser"); // ✅ Clear session
-  };
-
-  // Provide user info and actions to all children components
-  const value = {
-    user,
-    isAuthenticated: !!user, // Boolean shortcut
-    login,
-    logout,
+    localStorage.removeItem("currentUser");
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

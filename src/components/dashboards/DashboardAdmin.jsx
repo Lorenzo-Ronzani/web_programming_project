@@ -1,5 +1,5 @@
-import TopBar from "../components/topbar/TopBar";
-import Footer from "../components/footer/Footer";
+import TopBar from "../topbar/TopBar";
+import Footer from "../footer/Footer";
 
 function DashboardUser() {
   return (
@@ -9,7 +9,7 @@ function DashboardUser() {
       <main className="min-h-screen bg-gray-50 py-10">
         <div className="max-w-6xl mx-auto px-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            Welcome back, Lorenzo 👋
+            Welcome to Amin's Dashboard 👋
           </h1>
           <p className="text-gray-600 mb-8">
             Here’s your personalized student dashboard.
