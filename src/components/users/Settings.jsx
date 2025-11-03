@@ -209,7 +209,9 @@ const Settings = () => {
 
             {/* 🔹 Conditional Sections (Role-specific) */}
             {formData.role === "student" ? (
+              
               <section>
+                {/*}
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">
                   Academic Information
                 </h3>
@@ -228,7 +230,9 @@ const Settings = () => {
                     type="date"
                   />
                 </div>
+                */}
               </section>
+              
             ) : (
               <section>
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">

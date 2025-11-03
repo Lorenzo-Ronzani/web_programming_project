@@ -4,17 +4,17 @@
     "title": "Diploma Program",
     "color": "blue",
     "icon": "school",
-    "description": "A comprehensive two-year software development diploma program designed to equip students with foundational and advanced programming skills.",
+    "description": "A comprehensive two-year diploma program designed to equip students with foundational and advanced programming, networking, and IT systems skills.",
     "duration": "2 Years",
     "start": "September 5, 2025",
     "fees": "$9,254 domestic / $27,735 international"
   },
   {
     "id": 2,
-    "title": "Post Diploma Program",
+    "title": "Post-Diploma Certificate",
     "color": "green",
     "icon": "rocket_launch",
-    "description": "A one-year post-diploma program designed to enhance your software development skills with advanced concepts and hands-on projects.",
+    "description": "A one-year post-diploma certificate designed to enhance technical and professional development with advanced, hands-on learning projects.",
     "duration": "1 Year",
     "start": "September 5, 2025",
     "fees": "$7,895 domestic / $23,675 international"
@@ -24,7 +24,7 @@
     "title": "Certificate Program",
     "color": "purple",
     "icon": "license",
-    "description": "A six-month certificate program providing practical, industry-relevant skills for software development beginners or professionals seeking specialization.",
+    "description": "A six-month certificate program providing industry-relevant skills for beginners or professionals seeking specialization in software and technology fields.",
     "duration": "6 Months",
     "start": "September 5, 2025",
     "fees": "$3,895 domestic / $12,675 international"
