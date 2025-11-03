@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
-import usersData from "../data/users.json";
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import usersData from '../data/users.json';
 
 /*
   AuthContext
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
 
   // Load user session from localStorage (once)
   useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser");
+    const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     } else {
@@ -28,39 +28,31 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // ✅ Enhanced login function — now checks status
+  //  Enhanced login function — now checks status
   const login = (username, password) => {
-    const foundUser = usersData.find(
-      (u) =>
-        u.username.toLowerCase() === username.toLowerCase() &&
-        u.password === password
-    );
+    const foundUser = usersData.find((u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
 
     if (!foundUser) {
       // Invalid credentials
-      return { success: false, message: "Invalid username or password." };
+      return { success: false, message: 'Invalid username or password.' };
     }
 
-    if (foundUser.status !== "active") {
+    if (foundUser.status !== 'active') {
       // Prevent login if user is inactive
-      return { success: false, message: "Your account is inactive. Please contact the administrator." };
+      return { success: false, message: 'Your account is inactive. Please contact the administrator.' };
     }
 
-    // ✅ Login success
+    // Login success
     setUser(foundUser);
-    localStorage.setItem("currentUser", JSON.stringify(foundUser));
-    return { success: true };
+    localStorage.setItem('currentUser', JSON.stringify(foundUser));
+    return { success: true, user: foundUser };
   };
 
   // Logout function
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("currentUser");
+    localStorage.removeItem('currentUser');
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
 };
