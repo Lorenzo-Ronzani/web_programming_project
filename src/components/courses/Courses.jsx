@@ -1,7 +1,10 @@
-import coursesData from "../../data/courses.json";
+import { useEffect, useState } from "react";
+//import { buildApiUrl } from "../api"; // Adjust the path depending on your folder structure
+import { buildApiUrl } from "../../api";
+
 
 function Courses({ limit }) {
-  // Define a map of Tailwind color classes (guaranteed to work)
+  // Tailwind color classes for dynamic styling
   const colorMap = {
     blue: "bg-blue-50 border-blue-200 text-blue-700",
     green: "bg-green-50 border-green-200 text-green-700",
@@ -25,29 +28,58 @@ function Courses({ limit }) {
     neutral: "bg-neutral-50 border-neutral-200 text-neutral-700",
   };
 
-  // Limit the number of displayed courses (e.g., 6 on Home)
-  const displayedCourses = limit ? coursesData.slice(0, limit) : coursesData;
+  // React state to store the list of courses
+  const [courses, setCourses] = useState([]);
+
+  // Fetch courses from backend (Firebase Functions)
+  useEffect(() => {
+    // Automatically builds the correct API URL:
+    // - Dev: http://localhost:5001/.../getCourses
+    // - Prod: https://getcourses-xxxx.a.run.app
+    const url = buildApiUrl("getCourses");
+
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Fetched courses:", data);
+        setCourses(data);
+      })
+      .catch((err) => console.error("Error fetching courses:", err));
+  }, []);
+
+  // Apply "limit" if the component receives a limit prop
+  const displayedCourses = limit ? courses.slice(0, limit) : courses;
 
   return (
     <section id="courses" className="bg-white py-12">
       <div className="max-w-6xl mx-auto px-6 text-center">
+
+        {/* Section Title */}
         <h2 className="text-3xl font-bold text-gray-800 mb-2">Courses</h2>
+
+        {/* Section Subtitle */}
         <p className="text-gray-600 mb-10">
           Explore the key courses that form the foundation of your software development journey.
         </p>
 
-        {/* Dynamic Course Cards */}
+        {/* Courses Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {displayedCourses.map((course) => (
             <div
               key={course.id}
-              className={`${colorMap[course.color] || "bg-gray-50 border-gray-200 text-gray-700"} rounded-xl p-6 shadow hover:shadow-lg transition`}
+              className={`${
+                colorMap[course.color] || "bg-gray-50 border-gray-200 text-gray-700"
+              } rounded-xl p-6 shadow hover:shadow-lg transition`}
             >
+              {/* Course Title */}
               <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+
+              {/* Course Description */}
               <p className="text-sm text-gray-600">{course.description}</p>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );

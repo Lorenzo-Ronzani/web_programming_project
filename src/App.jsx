@@ -2,10 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
-// Layout Components
-import TopBar from './components/topbar/TopBar';
-import Footer from './components/footer/Footer';
-
 // Public Pages
 import Home from './pages/Home';
 import Programs from './components/programs/Programs';
