@@ -1,39 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopBar from "../topbar/TopBar";
 import Footer from "../footer/Footer";
-import usersData from "../../data/users.json";
-import coursesData from "../../data/courses.json";
-import coursesUsers from "../../data/courses_users.json";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { buildApiUrl } from "../../api";
 
 /*
-  DashboardAdmin
+  DashboardAdmin (API Version)
   ----------------------------------
-  - Displays admin overview with key statistics
-  - Manages students, courses, and enrollments (mock JSON data)
-  - Adds "Program" column in Courses Table
+  - Loads all data using backend APIs (Firebase Functions)
+  - Removes JSON files entirely
+  - Real-time dashboard with dynamic statistics
 */
 
 const DashboardAdmin = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Local state for dynamic updates
-  const [users, setUsers] = useState(usersData);
-  const [courses, setCourses] = useState(coursesData);
+  const [users, setUsers] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [coursesUsers, setCoursesUsers] = useState([]);
 
-  // Quick statistics
+  const [loading, setLoading] = useState(true);
+
+  // 🔥 Load all dashboard data from API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [usersRes, coursesRes, cuRes] = await Promise.all([
+          fetch(buildApiUrl("getUsers")),
+          fetch(buildApiUrl("getCourses")),
+          fetch(buildApiUrl("getCoursesUsers")),
+        ]);
+
+        const usersData = await usersRes.json();
+        const coursesData = await coursesRes.json();
+        const coursesUsersData = await cuRes.json();
+
+        setUsers(usersData);
+        setCourses(coursesData);
+        setCoursesUsers(coursesUsersData);
+
+      } catch (err) {
+        console.error("Error loading admin dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // 🧮 Dashboard statistics
   const totalStudents =
-    users?.filter((u) => u.role === "student" && u.status === "active").length ||
-    0;
-  const totalCourses = courses?.length || 0;
-  const totalEnrollments =
-    coursesUsers?.reduce((acc, s) => acc + (s.courses?.length || 0), 0) || 0;
+    users.filter((u) => u.role === "student" && u.status === "active").length;
 
-  // Average progress (mock calculation)
+  const totalCourses = courses.length;
+
+  const totalEnrollments = coursesUsers.reduce(
+    (acc, s) => acc + (s.courses?.length || 0),
+    0
+  );
+
   const avgProgress =
-    coursesUsers?.length > 0
+    coursesUsers.length > 0
       ? Math.round(
           coursesUsers.reduce((acc, s) => {
             if (!s.courses || s.courses.length === 0) return acc;
@@ -48,12 +78,10 @@ const DashboardAdmin = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
-      {/* Header */}
       <TopBar />
 
-      {/* Main Content */}
       <main className="container mx-auto flex-1 px-6 py-8">
-        {/* Welcome message */}
+        {/* Welcome Banner */}
         <div className="mb-8 rounded-2xl bg-white p-6 shadow-md">
           <h2 className="text-2xl font-semibold text-gray-900">
             Welcome, {user?.firstName || "Admin"} {user?.lastName || ""}
@@ -63,20 +91,35 @@ const DashboardAdmin = () => {
           </p>
         </div>
 
-        {/* Overview cards */}
-        <h3 className="mb-4 text-lg font-semibold text-gray-800">Overview</h3>
-        <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-4">
-          <Card label="Total Students" value={totalStudents} sub="Active" />
-          <Card label="Courses Offered" value={totalCourses} sub="This term" />
-          <Card label="Enrollments" value={totalEnrollments} sub="Total records" />
-          <Card label="Avg Progress" value={`${avgProgress}%`} sub="Across all students" />
-        </div>
+        {/* Loading state */}
+        {loading ? (
+          <p className="text-gray-600 text-lg">Loading dashboard...</p>
+        ) : (
+          <>
+            {/* Overview Cards */}
+            <h3 className="mb-4 text-lg font-semibold text-gray-800">
+              Overview
+            </h3>
+            <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-4">
+              <Card label="Total Students" value={totalStudents} sub="Active" />
+              <Card label="Courses Offered" value={totalCourses} sub="This term" />
+              <Card label="Enrollments" value={totalEnrollments} sub="Total records" />
+              <Card label="Avg Progress" value={`${avgProgress}%`} sub="Across all students" />
+            </div>
 
-        {/* Data tables section */}
-        <CoursesTable courses={courses} setCourses={setCourses} navigate={navigate} />
-        <div className="mt-6">
-          <StudentsTable students={users} coursesUsers={coursesUsers} />
-        </div>
+            {/* Courses Table */}
+            <CoursesTable
+              courses={courses}
+              setCourses={setCourses}
+              navigate={navigate}
+            />
+
+            {/* Students Table */}
+            <div className="mt-6">
+              <StudentsTable students={users} coursesUsers={coursesUsers} />
+            </div>
+          </>
+        )}
       </main>
 
       <Footer />
@@ -84,7 +127,8 @@ const DashboardAdmin = () => {
   );
 };
 
-/* Overview Card Component */
+/* ------ COMPONENTS ------ */
+
 const Card = ({ label, value, sub }) => (
   <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
     <h4 className="text-2xl font-bold text-gray-800">{value}</h4>
@@ -93,7 +137,6 @@ const Card = ({ label, value, sub }) => (
   </div>
 );
 
-/* Students Table */
 const StudentsTable = ({ students, coursesUsers }) => {
   const filteredStudents = (students || []).filter((s) => s.role === "student");
 
@@ -102,6 +145,7 @@ const StudentsTable = ({ students, coursesUsers }) => {
       <h3 className="mb-4 text-lg font-semibold text-gray-800">
         Students Overview
       </h3>
+
       <table className="w-full border-collapse text-left">
         <thead>
           <tr className="border-b">
@@ -112,16 +156,15 @@ const StudentsTable = ({ students, coursesUsers }) => {
             <th className="px-3 py-2 text-gray-600">Courses</th>
           </tr>
         </thead>
+
         <tbody>
           {filteredStudents.map((student) => {
             const enrollment = (coursesUsers || []).find(
               (s) => s.student_id === student.student_id
             );
+
             return (
-              <tr
-                key={student.student_id}
-                className="border-b transition hover:bg-gray-50"
-              >
+              <tr key={student.student_id} className="border-b hover:bg-gray-50">
                 <td className="px-3 py-2 text-sm text-gray-700">
                   {student.student_id}
                 </td>
@@ -131,17 +174,19 @@ const StudentsTable = ({ students, coursesUsers }) => {
                 <td className="px-3 py-2 text-sm text-gray-700">
                   {student.email}
                 </td>
+
                 <td className="px-3 py-2 text-sm">
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
                       student.status === "active"
                         ? "bg-green-100 text-green-700"
                         : "bg-gray-200 text-gray-600"
                     }`}
                   >
-                    {student.status === "active" ? "Active" : "Inactive"}
+                    {student.status}
                   </span>
                 </td>
+
                 <td className="px-3 py-2 text-sm text-gray-700">
                   {enrollment?.courses?.length || 0}
                 </td>
@@ -154,24 +199,10 @@ const StudentsTable = ({ students, coursesUsers }) => {
   );
 };
 
-/* Courses Table (with Program column added) */
+/* Courses Table */
 const CoursesTable = ({ courses, setCourses, navigate }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Toggle active/inactive status
-  const handleToggleStatus = (code) => {
-    const updated = courses.map((course) =>
-      course.code === code
-        ? {
-            ...course,
-            status: course.status === "active" ? "inactive" : "active",
-          }
-        : course
-    );
-    setCourses(updated);
-  };
-
-  // Filter courses by code or title
   const filteredCourses = (courses || []).filter((course) => {
     const q = searchTerm.toLowerCase();
     return (
@@ -180,13 +211,12 @@ const CoursesTable = ({ courses, setCourses, navigate }) => {
     );
   });
 
-  // Navigation handlers
   const handleEdit = (course) => navigate(`/courseedit/${course.code}`);
   const handleAddCourse = () => navigate("/courseadd");
 
   return (
     <div className="rounded-xl bg-white p-6 shadow-md">
-      {/* Header section */}
+      {/* Header */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-lg font-semibold text-gray-800">Courses List</h3>
 
@@ -194,20 +224,20 @@ const CoursesTable = ({ courses, setCourses, navigate }) => {
           <input
             type="text"
             placeholder="Search by code or title..."
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none sm:w-64"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 sm:w-64"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button
             onClick={handleAddCourse}
-            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700"
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
           >
             + Add Course
           </button>
         </div>
       </div>
 
-      {/* Courses Table */}
+      {/* Table */}
       <table className="w-full border-collapse text-left">
         <thead>
           <tr className="border-b">
@@ -220,48 +250,30 @@ const CoursesTable = ({ courses, setCourses, navigate }) => {
             <th className="px-3 py-2 text-right text-gray-600">Actions</th>
           </tr>
         </thead>
+
         <tbody>
           {filteredCourses.map((course) => (
-            <tr
-              key={course.code}
-              className="border-b transition hover:bg-gray-50"
-            >
-              <td className="px-3 py-2 text-sm text-gray-700">
-                {course.code}
-              </td>
-              <td className="px-3 py-2 text-sm text-gray-700">
-                {course.title}
-              </td>
-
-              {/* New Program Column */}
-              <td className="px-3 py-2 text-sm text-gray-600">
-                {course.programTitle || "—"}
-              </td>
-
-              <td className="px-3 py-2 text-sm text-gray-700">
-                {course.instructor}
-              </td>
-              <td className="px-3 py-2 text-sm text-gray-700">
-                {course.credits}
-              </td>
-
+            <tr key={course.code} className="border-b hover:bg-gray-50">
+              <td className="px-3 py-2 text-sm">{course.code}</td>
+              <td className="px-3 py-2 text-sm">{course.title}</td>
+              <td className="px-3 py-2 text-sm">{course.programTitle}</td>
+              <td className="px-3 py-2 text-sm">{course.instructor}</td>
+              <td className="px-3 py-2 text-sm">{course.credits}</td>
               <td className="px-3 py-2 text-sm">
-                <button
-                  onClick={() => handleToggleStatus(course.code)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
                     course.status === "active"
-                      ? "bg-green-100 text-green-700 hover:bg-green-200"
-                      : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-gray-200 text-gray-600"
                   }`}
                 >
-                  {course.status === "active" ? "Active" : "Inactive"}
-                </button>
+                  {course.status}
+                </span>
               </td>
-
               <td className="px-3 py-2 text-right text-sm">
                 <button
                   onClick={() => handleEdit(course)}
-                  className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-blue-700"
+                  className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
                 >
                   Edit
                 </button>
@@ -271,7 +283,6 @@ const CoursesTable = ({ courses, setCourses, navigate }) => {
         </tbody>
       </table>
 
-      {/* Empty state */}
       {filteredCourses.length === 0 && (
         <p className="mt-4 text-center text-sm text-gray-500">
           No courses found.

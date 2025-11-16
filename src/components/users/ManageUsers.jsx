@@ -1,23 +1,42 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../topbar/TopBar";
 import Footer from "../footer/Footer";
-import usersData from "../../data/users.json";
 import { useNavigate } from "react-router-dom";
+import { buildApiUrl } from "../../api";
 
 /*
-  ManageUsers.jsx
-  -------------------------
-  - Admin panel to view, search, add, edit, and toggle user status.
-  - Uses mock data from users.json.
-  - No permanent deletion: toggle between Active/Inactive.
+  ManageUsers.jsx (API Version)
+  --------------------------------------------------
+  - Loads users from backend API (Firebase Functions)
+  - Supports search, edit navigation, and status toggle
+  - Fully removes JSON dependencies
 */
 
 const ManageUsers = () => {
   const navigate = useNavigate();
-  const [users, setUsers] = useState(usersData);
+
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Filter users by name, email, or role
+  // 🔥 Load users from API
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const res = await fetch(buildApiUrl("getUsers"));
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error("Error loading users:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUsers();
+  }, []);
+
+  // 🔍 Filter users
   const filteredUsers = users.filter((user) => {
     const q = searchTerm.toLowerCase();
     return (
@@ -28,7 +47,7 @@ const ManageUsers = () => {
     );
   });
 
-  // Toggle active/inactive status
+  // Toggle active/inactive (frontend only for now)
   const handleToggleStatus = (userId) => {
     setUsers((prev) =>
       prev.map((user) =>
@@ -42,26 +61,27 @@ const ManageUsers = () => {
     );
   };
 
-  // Navigate to edit user form
-  const handleEdit = (user) => {
-    navigate(`/useredit/${user.student_id}`);
-  };
+  // Navigation
+  const handleEdit = (user) => navigate(`/useredit/${user.student_id}`);
+  const handleAddUser = () => navigate("/useradd");
 
-  // Navigate to add user form
-  const handleAddUser = () => {
-    navigate("/useradd");
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Loading users...
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
       <TopBar />
 
       <main className="flex-1 container mx-auto px-6 py-8">
+
         {/* Header */}
         <div className="bg-white shadow-md rounded-2xl p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Manage Users
-          </h2>
+          <h2 className="text-2xl font-semibold text-gray-900">Manage Users</h2>
           <p className="text-gray-500 mt-1">
             View, search, and manage user accounts.
           </p>
@@ -76,7 +96,7 @@ const ManageUsers = () => {
               <input
                 type="text"
                 placeholder="Search by name, email, or role..."
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-full sm:w-64"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 w-full sm:w-64"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -102,6 +122,7 @@ const ManageUsers = () => {
                 <th className="py-2 px-3 text-gray-600 text-right">Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {filteredUsers.map((user) => (
                 <tr

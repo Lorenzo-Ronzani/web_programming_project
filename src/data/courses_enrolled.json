@@ -65,7 +65,15 @@
         "credits": 3,
         "instructor": "Prof. Hans Rosling",
         "schedule": "MWF 9:00\u201310:00 AM"
-      }
+      },
+     {
+        "id": 14,
+        "title": "Operating Systems Concepts",
+        "code": "CS-460",
+        "credits": 3,
+        "instructor": "Prof. Linus Torvalds",
+        "schedule": "MWF 10:00\u201311:00 AM"
+      }      
     ]
   },
   {

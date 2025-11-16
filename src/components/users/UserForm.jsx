@@ -2,21 +2,22 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import TopBar from "../topbar/TopBar";
 import Footer from "../footer/Footer";
-import usersData from "../../data/users.json";
-import coursesData from "../../data/courses.json";
+import { buildApiUrl } from "../../api";
 
 /*
-  UserForm.jsx
+  UserForm.jsx (API Version)
   ----------------------------------
-  - Reusable form for adding or editing users
-  - Displays Program as read-only for students
-  - Admins can select a program from a dropdown
-  - Includes Enrollment Date field
+  - Loads users and courses from backend API
+  - Supports edit mode by loading user via student_id or id
+  - Allows admin to assign a program
 */
 
 const UserForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [user, setUser] = useState({
     id: "",
@@ -37,29 +38,48 @@ const UserForm = () => {
 
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // Load user data if editing
+  // 🔥 Load courses and user (if editing)
   useEffect(() => {
-    if (id) {
-      const existingUser = usersData.find(
-        (u) => u.student_id === id || String(u.id) === id
-      );
-      if (existingUser) {
-        setUser(existingUser);
-        setIsEditMode(true);
+    const loadData = async () => {
+      try {
+        // Load courses
+        const coursesRes = await fetch(buildApiUrl("getCourses"));
+        const coursesData = await coursesRes.json();
+        setCourses(coursesData);
+
+        // If editing → load user
+        if (id) {
+          const usersRes = await fetch(buildApiUrl("getUsers"));
+          const usersData = await usersRes.json();
+
+          const foundUser = usersData.find(
+            (u) => u.student_id === id || String(u.id) === id
+          );
+
+          if (foundUser) {
+            setUser(foundUser);
+            setIsEditMode(true);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading UserForm data:", err);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    loadData();
   }, [id]);
 
-  // Handle general input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUser((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle program selection and update program fields
+  // 🔥 Program change using API course list
   const handleProgramChange = (e) => {
-    const selectedCourseId = Number(e.target.value);
-    const selectedCourse = coursesData.find((c) => c.id === selectedCourseId);
+    const selectedId = Number(e.target.value);
+    const selectedCourse = courses.find((c) => c.id === selectedId);
 
     if (selectedCourse) {
       setUser((prev) => ({
@@ -71,7 +91,6 @@ const UserForm = () => {
     }
   };
 
-  // Handle active/inactive checkbox
   const handleStatusChange = (e) => {
     setUser((prev) => ({
       ...prev,
@@ -79,7 +98,7 @@ const UserForm = () => {
     }));
   };
 
-  // Simulate save (no backend yet)
+  // 🔥 (Future: send to backend — for now only navigate + alert)
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -91,6 +110,14 @@ const UserForm = () => {
 
     navigate("/manageusers");
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-gray-600">
+        Loading user form...
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
@@ -127,7 +154,7 @@ const UserForm = () => {
                   name="username"
                   value={user.username}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -144,10 +171,11 @@ const UserForm = () => {
                   name="firstName"
                   value={user.firstName}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
                   required
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Last Name
@@ -157,7 +185,7 @@ const UserForm = () => {
                   name="lastName"
                   value={user.lastName}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
                   required
                 />
               </div>
@@ -173,12 +201,12 @@ const UserForm = () => {
                 name="email"
                 value={user.email}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
                 required
               />
             </div>
 
-            {/* Password (Add mode only) */}
+            {/* Password (Add only) */}
             {!isEditMode && (
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -189,7 +217,7 @@ const UserForm = () => {
                   name="password"
                   value={user.password}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
                   required
                 />
               </div>
@@ -204,7 +232,7 @@ const UserForm = () => {
                 name="role"
                 value={user.role}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
               >
                 <option value="student">Student</option>
                 <option value="admin">Admin</option>
@@ -212,22 +240,22 @@ const UserForm = () => {
               </select>
             </div>
 
-            {/* Academic Information */}
+            {/* Program + Enrollment Date */}
             <div className="grid grid-cols-2 gap-4">
-              {/* Program */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Program
                 </label>
+
                 {user.role === "admin" || !isEditMode ? (
                   <select
                     name="program"
                     value={user.program || ""}
                     onChange={handleProgramChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
                   >
                     <option value="">Select Program...</option>
-                    {coursesData.map((course) => (
+                    {courses.map((course) => (
                       <option key={course.id} value={course.id}>
                         {course.code} – {course.title} ({course.programTitle})
                       </option>
@@ -236,15 +264,13 @@ const UserForm = () => {
                 ) : (
                   <input
                     type="text"
-                    name="program"
                     value={user.program || ""}
                     readOnly
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 bg-gray-50 text-gray-700 focus:outline-none"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 bg-gray-50"
                   />
                 )}
               </div>
 
-              {/* Enrollment Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Enrollment Date
@@ -254,7 +280,7 @@ const UserForm = () => {
                   name="enrollmentDate"
                   value={user.enrollmentDate || ""}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
                 />
               </div>
             </div>
@@ -269,8 +295,8 @@ const UserForm = () => {
                 name="photo"
                 value={user.photo}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 placeholder="https://i.pravatar.cc/100?img=1"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
               />
             </div>
 
@@ -279,14 +305,14 @@ const UserForm = () => {
               <button
                 type="button"
                 onClick={() => navigate("/manageusers")}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
               >
                 Cancel
               </button>
 
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
                 {isEditMode ? "Save Changes" : "Add User"}
               </button>

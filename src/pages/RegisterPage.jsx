@@ -1,45 +1,59 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import usersData from "../data/users.json";
 import TopBar from "../components/topbar/TopBar";
+import { buildApiUrl } from "../api";
 
 /*
-  RegisterPage
-  ----------------------------
-  - Allows new user registration.
-  - Updates localStorage (simulating write to users.json).
-  - Prevents duplicate usernames.
-  - Redirects to login after successful registration.
+  RegisterPage (API Version)
+  ---------------------------------------------
+  - Fetches existing users from backend API
+  - Validates uniqueness of username
+  - Prepares POST request to create a new user
+  - Removes localStorage and JSON dependencies
 */
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [newUser, setNewUser] = useState({
     username: "",
     password: "",
     firstName: "",
     lastName: "",
-    photo: "/images/default-avatar.png", // default image
+    role: "student",
+    status: "active",
+    photo: "/images/default-avatar.png",
   });
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Load initial users (from JSON or localStorage)
+  // 🔥 Load users from API
   useEffect(() => {
-    const storedUsers = JSON.parse(localStorage.getItem("users"));
-    if (storedUsers) {
-      setUsers(storedUsers);
-    } else {
-      setUsers(usersData);
-    }
+    const loadUsers = async () => {
+      try {
+        const res = await fetch(buildApiUrl("getUsers"));
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error("Error loading users:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUsers();
   }, []);
 
   const handleChange = (e) => {
     setNewUser({ ...newUser, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  // 🔥 Submit new user
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate fields
@@ -49,7 +63,7 @@ const RegisterPage = () => {
       return;
     }
 
-    // Check for existing username
+    // Check for duplicate username
     const existingUser = users.find((u) => u.username === newUser.username);
     if (existingUser) {
       setError("This username already exists. Please choose another one.");
@@ -57,19 +71,39 @@ const RegisterPage = () => {
       return;
     }
 
-    // Add new user
-    const updatedUsers = [...users, newUser];
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    setUsers(updatedUsers);
+    try {
+      // 🔥 Here we prepare the POST request for your backend
+      const res = await fetch(buildApiUrl("createUser"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser),
+      });
 
-    setError("");
-    setSuccess("Registration successful! Redirecting to login...");
-    setTimeout(() => navigate("/login"), 2000);
+      if (!res.ok) {
+        throw new Error("Failed to register user.");
+      }
+
+      setError("");
+      setSuccess("Registration successful! Redirecting to login...");
+
+      setTimeout(() => navigate("/login"), 1500);
+
+    } catch (err) {
+      console.error("Register error:", err);
+      setError("Error registering user. Please try again.");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Loading registration form...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* ✅ TopBar at top */}
       <TopBar />
 
       <div className="flex flex-1 items-center justify-center px-4 pt-24">
@@ -84,6 +118,7 @@ const RegisterPage = () => {
           {error && <div className="text-red-600 text-sm mb-4 text-center">{error}</div>}
           {success && <div className="text-green-600 text-sm mb-4 text-center">{success}</div>}
 
+          {/* FIRST NAME */}
           <input
             type="text"
             name="firstName"
@@ -93,6 +128,7 @@ const RegisterPage = () => {
             className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
           />
 
+          {/* LAST NAME */}
           <input
             type="text"
             name="lastName"
@@ -102,6 +138,7 @@ const RegisterPage = () => {
             className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
           />
 
+          {/* USERNAME */}
           <input
             type="text"
             name="username"
@@ -111,6 +148,7 @@ const RegisterPage = () => {
             className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
           />
 
+          {/* PASSWORD */}
           <input
             type="password"
             name="password"
@@ -120,6 +158,7 @@ const RegisterPage = () => {
             className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-6 focus:ring-2 focus:ring-blue-500 outline-none"
           />
 
+          {/* SUBMIT BUTTON */}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition"
