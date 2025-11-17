@@ -1,164 +1,163 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TopBar from "../components/topbar/TopBar";
 import { buildApiUrl } from "../api";
 
 /*
-  RegisterPage (API Version)
+  RegisterPage
   ---------------------------------------------
-  - Fetches existing users from backend API
-  - Validates uniqueness of username
-  - Prepares POST request to create a new user
-  - Removes localStorage and JSON dependencies
+  Handles creation of new user accounts.
+  Sends data to backend Firebase Function
+  responsible for user creation and validation.
 */
 
 const RegisterPage = () => {
   const navigate = useNavigate();
 
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+  // Form state fields
   const [newUser, setNewUser] = useState({
-    username: "",
-    password: "",
     firstName: "",
     lastName: "",
-    role: "student",
-    status: "active",
-    photo: "/images/default-avatar.png",
+    email: "",
+    password: "",
+    confirmPassword: ""
   });
 
+  // UI feedback messages
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // 🔥 Load users from API
-  useEffect(() => {
-    const loadUsers = async () => {
-      try {
-        const res = await fetch(buildApiUrl("getUsers"));
-        const data = await res.json();
-        setUsers(data);
-      } catch (err) {
-        console.error("Error loading users:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUsers();
-  }, []);
-
+  // Handle changes in input fields
   const handleChange = (e) => {
-    setNewUser({ ...newUser, [e.target.name]: e.target.value });
+    setNewUser((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // 🔥 Submit new user
+  /*
+    Validates fields and sends the registration request
+    to the backend API (Firebase Function).
+  */
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
 
-    // Validate fields
-    if (!newUser.username || !newUser.password || !newUser.firstName || !newUser.lastName) {
+    // Basic validation for empty fields
+    if (
+      !newUser.firstName ||
+      !newUser.lastName ||
+      !newUser.email ||
+      !newUser.password ||
+      !newUser.confirmPassword
+    ) {
       setError("All fields are required.");
-      setSuccess("");
       return;
     }
 
-    // Check for duplicate username
-    const existingUser = users.find((u) => u.username === newUser.username);
-    if (existingUser) {
-      setError("This username already exists. Please choose another one.");
-      setSuccess("");
+    // Verify if password and confirmation match
+    if (newUser.password !== newUser.confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
 
     try {
-      // 🔥 Here we prepare the POST request for your backend
-      const res = await fetch(buildApiUrl("createUser"), {
+      const url = buildApiUrl("createUser");
+
+      const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newUser),
+        body: JSON.stringify({
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          email: newUser.email,
+          password: newUser.password
+        })
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to register user.");
+      const result = await response.json();
+
+      if (!result.success) {
+        setError(result.message || "Registration failed.");
+        return;
       }
 
-      setError("");
-      setSuccess("Registration successful! Redirecting to login...");
-
+      setSuccess("Account created successfully! Redirecting...");
       setTimeout(() => navigate("/login"), 1500);
 
     } catch (err) {
-      console.error("Register error:", err);
-      setError("Error registering user. Please try again.");
+      console.error("Registration error:", err);
+      setError("Cannot contact server. Try again later.");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Loading registration form...
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <TopBar />
 
-      <div className="flex flex-1 items-center justify-center px-4 pt-24">
+      <div className="flex flex-1 items-center justify-center px-4 pt-24 pb-10">
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md border border-gray-200"
+          className="bg-white border border-gray-200 shadow-lg rounded-2xl p-8 w-full max-w-md"
         >
           <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
             Create your account
           </h1>
 
-          {error && <div className="text-red-600 text-sm mb-4 text-center">{error}</div>}
-          {success && <div className="text-green-600 text-sm mb-4 text-center">{success}</div>}
+          {/* Error and success feedback */}
+          {error && <p className="text-center text-red-600 mb-4 text-sm">{error}</p>}
+          {success && <p className="text-center text-green-600 mb-4 text-sm">{success}</p>}
 
-          {/* FIRST NAME */}
+          {/* Name fields in two columns */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <input
+              type="text"
+              name="firstName"
+              placeholder="First Name"
+              value={newUser.firstName}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
+
+            <input
+              type="text"
+              name="lastName"
+              placeholder="Last Name"
+              value={newUser.lastName}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
+          </div>
+
+          {/* Email */}
           <input
-            type="text"
-            name="firstName"
-            placeholder="First Name"
-            value={newUser.firstName}
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={newUser.email}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-400 focus:outline-none"
           />
 
-          {/* LAST NAME */}
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Last Name"
-            value={newUser.lastName}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
-          />
-
-          {/* USERNAME */}
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={newUser.username}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 outline-none"
-          />
-
-          {/* PASSWORD */}
+          {/* Password */}
           <input
             type="password"
             name="password"
             placeholder="Password"
             value={newUser.password}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-6 focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-400 focus:outline-none"
           />
 
-          {/* SUBMIT BUTTON */}
+          {/* Confirm Password */}
+          <input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            value={newUser.confirmPassword}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-6 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          />
+
+          {/* Submit button */}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition"
@@ -166,7 +165,8 @@ const RegisterPage = () => {
             Register
           </button>
 
-          <p className="text-sm text-gray-500 text-center mt-4">
+          {/* Link to login page */}
+          <p className="mt-4 text-sm text-center text-gray-500">
             Already have an account?{" "}
             <span
               className="text-blue-600 hover:underline cursor-pointer"

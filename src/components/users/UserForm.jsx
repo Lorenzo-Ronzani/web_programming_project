@@ -38,7 +38,7 @@ const UserForm = () => {
 
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // 🔥 Load courses and user (if editing)
+  // Load courses and user (if editing)
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -76,7 +76,7 @@ const UserForm = () => {
     setUser((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🔥 Program change using API course list
+  // Program change using API course list
   const handleProgramChange = (e) => {
     const selectedId = Number(e.target.value);
     const selectedCourse = courses.find((c) => c.id === selectedId);
@@ -98,7 +98,7 @@ const UserForm = () => {
     }));
   };
 
-  // 🔥 (Future: send to backend — for now only navigate + alert)
+  // (Future: send to backend — for now only navigate + alert)
   const handleSubmit = (e) => {
     e.preventDefault();
 
