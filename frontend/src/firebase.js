@@ -50,13 +50,17 @@ export const db = getFirestore(app);
   This prevents your local development environment from writing data
   to the real Firebase project.
 */
-if (window.location.hostname === "localhost") {
+
+const useEmulator = import.meta.env.VITE_USE_EMULATOR === "true";
+
+if (useEmulator) {
   connectAuthEmulator(auth, "http://127.0.0.1:9099");
   connectFirestoreEmulator(db, "localhost", 8080);
 
-  console.log("Firebase Auth Emulator running at http://127.0.0.1:9099");
-  console.log("Firestore Emulator running at http://localhost:8080");
+  console.log("⚠️ Using Firebase Auth Emulator at http://127.0.0.1:9099");
+  console.log("⚠️ Using Firestore Emulator at http://localhost:8080");
 }
+
 
 /*
   The 'app' instance is exported in case other Firebase services
