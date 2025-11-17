@@ -143,12 +143,12 @@ export const AuthProvider = ({ children }) => {
     Google login (disabled on localhost)
   */
   const loginWithGoogle = async () => {
-    if (window.location.hostname === "localhost") {
+    /*if (window.location.hostname === "localhost") {
       return {
         success: false,
         message: "Google login is disabled in development environment.",
       };
-    }
+    }*/
 
     try {
       const provider = new GoogleAuthProvider();
