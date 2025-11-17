@@ -57,8 +57,8 @@ if (useEmulator) {
   connectAuthEmulator(auth, "http://127.0.0.1:9099");
   connectFirestoreEmulator(db, "localhost", 8080);
 
-  console.log("⚠️ Using Firebase Auth Emulator at http://127.0.0.1:9099");
-  console.log("⚠️ Using Firestore Emulator at http://localhost:8080");
+  console.log("Using Firebase Auth Emulator at http://127.0.0.1:9099");
+  console.log("Using Firestore Emulator at http://localhost:8080");
 }
 
 
