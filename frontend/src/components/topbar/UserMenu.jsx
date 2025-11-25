@@ -99,7 +99,7 @@ function UserMenu() {
             {user
               ? user.role === "admin"
                 ? "Administrator"
-                : `Student: ${user.student_id}`
+                : `Student: ${user.studentId}`
               : "Not logged in"}
           </span>
         </div>

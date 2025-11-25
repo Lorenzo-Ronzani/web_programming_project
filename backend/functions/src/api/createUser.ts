@@ -1,13 +1,8 @@
 // ------------------------------------------------------
 // createUser.ts - Creates a Firebase Auth + Firestore user
 // ------------------------------------------------------
-
 import { onRequest } from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
-
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
+import { admin } from "../config/firebaseAdmin";
 
 export const createUser = onRequest({ cors: true }, async (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
@@ -20,7 +15,10 @@ export const createUser = onRequest({ cors: true }, async (req, res) => {
   }
 
   if (req.method !== "POST") {
-    res.status(405).json({ success: false, message: "Only POST requests allowed" });
+    res.status(405).json({
+      success: false,
+      message: "Only POST requests allowed",
+    });
     return;
   }
 
@@ -35,6 +33,7 @@ export const createUser = onRequest({ cors: true }, async (req, res) => {
       return;
     }
 
+    // 1. Criar usuário no Firebase Auth
     const userRecord = await admin.auth().createUser({
       email,
       password,
@@ -42,6 +41,8 @@ export const createUser = onRequest({ cors: true }, async (req, res) => {
 
     const uid = userRecord.uid;
 
+    // 2. Criar documento na coleção users
+    // (studentId será gerado automaticamente pela trigger "assignStudentId")
     await admin.firestore().collection("users").doc(uid).set({
       username: email,
       firstName: firstName ?? "",
@@ -56,6 +57,7 @@ export const createUser = onRequest({ cors: true }, async (req, res) => {
       uid,
       message: "User created successfully",
     });
+
   } catch (error: any) {
     console.error("CREATE USER ERROR:", error);
 
