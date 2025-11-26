@@ -49,11 +49,13 @@ import Settings from "./components/users/Settings";
    ================================================ */
 import ProtectedRoute from "./components/routes/ProtectedRoute";
 
+
 /* ================================================
    ADMIN — ADMISSIONS (REAL FILES)
    ================================================ */
 import AdmissionsList from "./pages/admin/admissions/AdmissionsList";
 import AddAdmission from "./pages/admin/admissions/AddAdmission";
+import EditAdmission from "./pages/admin/admissions/EditAdmission";
 
 /*
   App.jsx
@@ -126,7 +128,7 @@ function App() {
                 {/* ADMIN — PROGRAM DETAILS: ADMISSIONS */}
                 <Route path="admissions" element={<AdmissionsList />} />
                 <Route path="admissions/add" element={<AddAdmission />} />
-                <Route path="admissions/edit/:id" element={<AddAdmission />} />
+                <Route path="admissions/edit/:id" element={<EditAdmission />} />
               </Route>
 
               {/* ========================================

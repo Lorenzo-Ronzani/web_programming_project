@@ -26,8 +26,6 @@ const AddAdmission = () => {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-4">Add Admission</h1>
-
       {message && (
         <p className="mb-4 text-blue-600 font-medium">{message}</p>
       )}

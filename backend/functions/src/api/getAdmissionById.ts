@@ -6,6 +6,14 @@ import { db } from "../config/firebase";
 
 export const getAdmissionById = onRequest({ cors: true }, async (req: any, res: any) => {
   try {
+    // Allow only GET
+    if (req.method !== "GET") {
+      return res.status(405).json({
+        success: false,
+        message: "Only GET method allowed",
+      });
+    }
+
     const id = req.query.id as string;
 
     if (!id) {
@@ -37,3 +45,4 @@ export const getAdmissionById = onRequest({ cors: true }, async (req: any, res: 
     });
   }
 });
+
