@@ -8,21 +8,12 @@ const EditAdmission = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Stores the admission loaded from the backend
   const [initialData, setInitialData] = useState(null);
-
-  // Controls loading state while fetching data
   const [loading, setLoading] = useState(true);
 
-  /*
-    Fetch the admission by ID from the backend.
-    The backend expects the ID as a query parameter (?id=...),
-    and returns the item in "result.item".
-  */
   useEffect(() => {
     async function fetchAdmission() {
       try {
-        //const url = buildApiUrl(`getAdmissionById?id=${id}`);
         const url = buildApiUrl("getAdmissionById") + `?id=${id}`;
 
         const response = await fetch(url, {
@@ -32,33 +23,56 @@ const EditAdmission = () => {
 
         const result = await response.json();
 
-        if (result.success) {
-          // Backend returns { success: true, item: {...} }
-          setInitialData(result.item);
+        if (result.success && result.item) {
+          const item = result.item;
+
+
+          const normalized = {
+            title: item.title || "",
+            
+            requirements: Array.isArray(item.requirements)
+              ? item.requirements.join("\n")
+              : item.requirements || "",
+            transferability: item.transferability || "",
+            language_proficiency: item.language_proficiency || "",
+            academic_upgrading: item.academic_upgrading || "",
+          };
+
+          setInitialData(normalized);
         } else {
           console.error("Failed to load admission data.");
         }
       } catch (error) {
         console.error("Error loading admission:", error);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     }
 
     fetchAdmission();
   }, [id]);
 
-  /*
-    Handles the update operation.
-    Sends the updated data to the backend using updateAdmission().
-  */
-  const handleSubmit = async (data) => {
-    const result = await updateAdmission(id, data);
+  const handleSubmit = async (formData) => {
+    
+    const payload = {
+      title: formData.title || "",
+      requirements: Array.isArray(formData.requirements)
+        ? formData.requirements
+        : (formData.requirements || "")
+            .split("\n")
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0),
+      transferability: formData.transferability || "",
+      language_proficiency: formData.language_proficiency || "",
+      academic_upgrading: formData.academic_upgrading || "",
+    };
+
+    const result = await updateAdmission(id, payload);
 
     if (result.success) {
       navigate("/dashboardadmin/admissions");
     } else {
-      alert("Update failed: " + result.message);
+      alert("Update failed: " + (result.message || "Unknown error"));
     }
   };
 
@@ -66,9 +80,12 @@ const EditAdmission = () => {
     return <p>Loading...</p>;
   }
 
+  if (!initialData) {
+    return <p>Admission not found.</p>;
+  }
+
   return (
     <div>
-      {/* Reuses the same form component used for creation */}
       <AdmissionForm initialData={initialData} onSubmit={handleSubmit} />
     </div>
   );

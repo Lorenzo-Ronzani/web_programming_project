@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { db } from "../../../firebase";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { Link } from "react-router-dom";
+import { deleteAdmission } from "../../../api/admissions"; // <-- Added
 
 /*
   AdmissionsList.jsx
@@ -29,11 +30,17 @@ const AdmissionsList = () => {
     fetchAdmissions();
   }, []);
 
-  // Delete an admission
+  // Delete an admission (via backend)
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this admission?")) return;
 
-    await deleteDoc(doc(db, "admissions", id));
+    const result = await deleteAdmission(id); // <-- Using backend API now
+
+    if (!result.success) {
+      alert("Failed to delete: " + result.message);
+      return;
+    }
+
     fetchAdmissions(); // refresh table
   };
 

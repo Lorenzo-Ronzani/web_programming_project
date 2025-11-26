@@ -13,7 +13,12 @@ const AdmissionForm = ({ initialData = null, onSubmit }) => {
     if (initialData) {
       setForm({
         title: initialData.title || "",
-        requirements: initialData.requirements?.join("\n") || "",
+
+        // Aceita string ou array sem quebrar
+        requirements: Array.isArray(initialData.requirements)
+          ? initialData.requirements.join("\n")
+          : initialData.requirements || "",
+
         transferability: initialData.transferability || "",
         language_proficiency: initialData.language_proficiency || "",
         academic_upgrading: initialData.academic_upgrading || "",
@@ -30,10 +35,13 @@ const AdmissionForm = ({ initialData = null, onSubmit }) => {
 
     const payload = {
       title: form.title,
+
+      // Converte corretamente para array
       requirements: form.requirements
         .split("\n")
         .map((r) => r.trim())
         .filter(Boolean),
+
       transferability: form.transferability,
       language_proficiency: form.language_proficiency,
       academic_upgrading: form.academic_upgrading,
@@ -64,9 +72,7 @@ const AdmissionForm = ({ initialData = null, onSubmit }) => {
 
         {/* REQUIREMENTS */}
         <div>
-          <label className="block font-medium">
-            Requirements (one per line)
-          </label>
+          <label className="block font-medium">Requirements (one per line)</label>
           <textarea
             name="requirements"
             className="w-full border p-2 rounded h-28"
@@ -75,7 +81,7 @@ const AdmissionForm = ({ initialData = null, onSubmit }) => {
           />
         </div>
 
-        {/* OPTIONAL */}
+        {/* TRANSFERABILITY */}
         <div>
           <label className="block font-medium">Transferability</label>
           <input
@@ -86,6 +92,7 @@ const AdmissionForm = ({ initialData = null, onSubmit }) => {
           />
         </div>
 
+        {/* LANGUAGE PROFICIENCY */}
         <div>
           <label className="block font-medium">Language Proficiency</label>
           <input
@@ -96,6 +103,7 @@ const AdmissionForm = ({ initialData = null, onSubmit }) => {
           />
         </div>
 
+        {/* ACADEMIC UPGRADING */}
         <div>
           <label className="block font-medium">Academic Upgrading</label>
           <input

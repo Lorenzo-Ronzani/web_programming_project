@@ -8,8 +8,8 @@ export async function createAdmission({
   title,
   requirements,
   transferability,
-  languageProficiency,
-  academicUpgrading,
+  language_proficiency,
+  academic_upgrading,
 }) {
   try {
     const url = buildApiUrl("createAdmission");
@@ -21,8 +21,8 @@ export async function createAdmission({
         title,
         requirements,
         transferability,
-        languageProficiency,
-        academicUpgrading,
+        language_proficiency,
+        academic_upgrading,
       }),
     });
 
@@ -60,6 +60,29 @@ export async function updateAdmission(id, data) {
     return {
       success: false,
       message: "Network error calling updateAdmission",
+    };
+  }
+}
+
+
+/*
+  deleteAdmission
+  Sends a DELETE request to remove an admission by ID.
+*/
+export async function deleteAdmission(id) {
+  try {
+    const url = buildApiUrl("deleteAdmission") + `?id=${id}`;
+
+    const response = await fetch(url, {
+      method: "DELETE",
+    });
+
+    return await response.json();
+  } catch (err) {
+    console.error("deleteAdmission error:", err);
+    return {
+      success: false,
+      message: "Network error calling deleteAdmission",
     };
   }
 }
