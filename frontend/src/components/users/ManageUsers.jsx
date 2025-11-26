@@ -19,7 +19,7 @@ const ManageUsers = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 🔥 Load users from API
+  // Load users from API
   useEffect(() => {
     const loadUsers = async () => {
       try {
@@ -36,13 +36,13 @@ const ManageUsers = () => {
     loadUsers();
   }, []);
 
-  // 🔍 Filter users
+  // Filter users
   const filteredUsers = users.filter((user) => {
     const q = searchTerm.toLowerCase();
     return (
       user.firstName.toLowerCase().includes(q) ||
       user.lastName.toLowerCase().includes(q) ||
-      user.email.toLowerCase().includes(q) ||
+      user.username.toLowerCase().includes(q) ||
       user.role.toLowerCase().includes(q)
     );
   });
@@ -51,7 +51,7 @@ const ManageUsers = () => {
   const handleToggleStatus = (userId) => {
     setUsers((prev) =>
       prev.map((user) =>
-        user.student_id === userId
+        user.studentId === userId
           ? {
               ...user,
               status: user.status === "active" ? "inactive" : "active",
@@ -62,7 +62,7 @@ const ManageUsers = () => {
   };
 
   // Navigation
-  const handleEdit = (user) => navigate(`/useredit/${user.student_id}`);
+  const handleEdit = (user) => navigate(`/useredit/${user.studentId}`);
   const handleAddUser = () => navigate("/useradd");
 
   if (loading) {
@@ -126,17 +126,17 @@ const ManageUsers = () => {
             <tbody>
               {filteredUsers.map((user) => (
                 <tr
-                  key={user.student_id}
+                  key={user.studentId}
                   className="border-b hover:bg-gray-50 transition"
                 >
                   <td className="py-2 px-3 text-sm text-gray-700">
-                    {user.student_id}
+                    {user.studentId}
                   </td>
                   <td className="py-2 px-3 text-sm text-gray-700">
                     {user.firstName} {user.lastName}
                   </td>
                   <td className="py-2 px-3 text-sm text-gray-700">
-                    {user.email}
+                    {user.username}
                   </td>
                   <td className="py-2 px-3 text-sm text-gray-700 capitalize">
                     {user.role}
@@ -145,7 +145,7 @@ const ManageUsers = () => {
                   {/* Status toggle */}
                   <td className="py-2 px-3 text-center">
                     <button
-                      onClick={() => handleToggleStatus(user.student_id)}
+                      onClick={() => handleToggleStatus(user.studentId)}
                       className={`px-3 py-1 text-xs font-medium rounded-full transition ${
                         user.status === "active"
                           ? "bg-green-100 text-green-700 hover:bg-green-200"
