@@ -1,142 +1,199 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 
-// Public Pages
-import Home from './pages/Home';
-import Programs from './components/programs/Programs';
-import ProgramsAll from './pages/ProgramsAll';
-import Courses from './components/courses/Courses';
-import CoursesAll from './pages/CoursesAll';
-import Terms from './components/terms/Terms';
-import MainContent from './pages/MainContent';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
+/* ================================================
+   PUBLIC PAGES
+   ================================================ */
+import Home from "./pages/Home";
+import Programs from "./components/programs/Programs";
+import ProgramsAll from "./pages/ProgramsAll";
+import Courses from "./components/courses/Courses";
+import CoursesAll from "./pages/CoursesAll";
+import Terms from "./components/terms/Terms";
+import MainContent from "./pages/MainContent";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
-//  Protected Pages (Dashboards)
-import DashboardUser from './components/dashboards/DashboardUser';
-import DashboardAdmin from './components/dashboards/DashboardAdmin';
+/* ================================================
+   STUDENT AREA
+   ================================================ */
+import DashboardUser from "./components/dashboards/DashboardUser";
+import CourseRegistration from "./components/courses/CourseRegistration";
 
-//  User Management (Admin only)
-import ManageUsers from './components/users/ManageUsers';
-import UserForm from './components/users/UserForm';
-import Settings from './components/users/Settings';
+/* ================================================
+   ADMIN LAYOUT + DASHBOARD
+   ================================================ */
+import AdminLayout from "./components/admin/AdminLayout";
+import DashboardAdmin from "./components/dashboards/DashboardAdmin";
 
-//  Courses Management
-import CourseRegistration from './components/courses/CourseRegistration';
-import CourseEdit from './components/courses/CourseEdit';
+/* ================================================
+   ADMIN – USER & COURSE MANAGEMENT
+   ================================================ */
+import ManageUsers from "./components/users/ManageUsers";
+import UserForm from "./components/users/UserForm";
+import CourseEdit from "./components/courses/CourseEdit";
 
-//  Protected Route Wrapper
-import ProtectedRoute from './components/routes/ProtectedRoute';
+/* ================================================
+   SHARED SETTINGS
+   ================================================ */
+import Settings from "./components/users/Settings";
+
+/* ================================================
+   AUTH ROUTE PROTECTION
+   ================================================ */
+import ProtectedRoute from "./components/routes/ProtectedRoute";
+
+/* ================================================
+   ADMIN — ADMISSIONS (REAL FILES)
+   ================================================ */
+import AdmissionsList from "./pages/admin/admissions/AdmissionsList";
+import AddAdmission from "./pages/admin/admissions/AddAdmission";
 
 /*
   App.jsx
-  ------------------------
-  - Wraps all routes with AuthProvider
-  - Defines public and protected routes
-  - Supports role-based access (student/admin)
-  - Includes global layout (TopBar + Footer)
+  ---------------------------------------------------------------
+  Handles:
+  ✔ Public routes
+  ✔ Student dashboard routes
+  ✔ Admin dashboard routes
+  ✔ Nested admin layout (/dashboardadmin/*)
+  ✔ Role-based access control via ProtectedRoute
+  ✔ Clean and scalable structure
 */
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className='flex min-h-screen flex-col'>
-          {/* Main content area */}
-          <main className='flex-1'>
+        <div className="flex min-h-screen flex-col">
+          <main className="flex-1">
             <Routes>
-              {/* Public Routes */}
-              <Route path='/' element={<Home />} />
-              <Route path='/programs' element={<Programs />} />
-              <Route path='/programsall' element={<ProgramsAll />} />
-              <Route path='/courses' element={<Courses />} />
-              <Route path='/coursesall' element={<CoursesAll />} />
-              <Route path='/terms' element={<Terms />} />
-              <Route path='/content' element={<MainContent />} />
-              <Route path='/login' element={<LoginPage />} />
-              <Route path='/register' element={<RegisterPage />} />
 
-              {/* Student Routes */}
+              {/* ========================================
+                 PUBLIC ROUTES
+                 ======================================== */}
+              <Route path="/" element={<Home />} />
+              <Route path="/programs" element={<Programs />} />
+              <Route path="/programsall" element={<ProgramsAll />} />
+              <Route path="/courses" element={<Courses />} />
+              <Route path="/coursesall" element={<CoursesAll />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/content" element={<MainContent />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+
+              {/* ========================================
+                 STUDENT ROUTES
+                 ======================================== */}
               <Route
-                path='/dashboarduser'
+                path="/dashboarduser"
                 element={
-                  <ProtectedRoute allowedRoles={['student']}>
+                  <ProtectedRoute allowedRoles={["student"]}>
                     <DashboardUser />
                   </ProtectedRoute>
                 }
               />
+
               <Route
-                path='/coursesregistration'
+                path="/coursesregistration"
                 element={
-                  <ProtectedRoute allowedRoles={['student']}>
+                  <ProtectedRoute allowedRoles={["student"]}>
                     <CourseRegistration />
                   </ProtectedRoute>
                 }
               />
 
-              {/*  Admin Routes */}
+              {/* ========================================
+                 ADMIN AREA (NESTED)
+                 ======================================== */}
               <Route
-                path='/dashboardadmin'
+                path="/dashboardadmin"
                 element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <DashboardAdmin />
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <AdminLayout />
                   </ProtectedRoute>
                 }
-              />
+              >
+                {/* Default admin dashboard */}
+                <Route index element={<DashboardAdmin />} />
+
+                {/* ADMIN — PROGRAM DETAILS: ADMISSIONS */}
+                <Route path="admissions" element={<AdmissionsList />} />
+                <Route path="admissions/add" element={<AddAdmission />} />
+                <Route path="admissions/edit/:id" element={<AddAdmission />} />
+              </Route>
+
+              {/* ========================================
+                 LEGACY ADMIN ROUTES (still active)
+                 ======================================== */}
               <Route
-                path='/manageusers'
+                path="/manageusers"
                 element={
-                  <ProtectedRoute allowedRoles={['admin']}>
+                  <ProtectedRoute allowedRoles={["admin"]}>
                     <ManageUsers />
                   </ProtectedRoute>
                 }
               />
+
               <Route
-                path='/useradd'
+                path="/useradd"
                 element={
-                  <ProtectedRoute allowedRoles={['admin']}>
+                  <ProtectedRoute allowedRoles={["admin"]}>
                     <UserForm />
                   </ProtectedRoute>
                 }
               />
+
               <Route
-                path='/useredit/:id'
+                path="/useredit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={['admin']}>
+                  <ProtectedRoute allowedRoles={["admin"]}>
                     <UserForm />
                   </ProtectedRoute>
                 }
               />
+
               <Route
-                path='/courseedit/:code'
+                path="/courseedit/:code"
                 element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <CourseEdit />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path='/courseadd'
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
+                  <ProtectedRoute allowedRoles={["admin"]}>
                     <CourseEdit />
                   </ProtectedRoute>
                 }
               />
 
-              {/* Shared Settings (Admin + Student) */}
               <Route
-                path='/settings'
+                path="/courseadd"
                 element={
-                  <ProtectedRoute allowedRoles={['admin', 'student']}>
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <CourseEdit />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* ========================================
+                 SHARED SETTINGS
+                 ======================================== */}
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute allowedRoles={["admin", "student"]}>
                     <Settings />
                   </ProtectedRoute>
                 }
               />
 
-              {/* Fallback: Redirect unknown paths */}
-              <Route path='*' element={<Navigate to='/' replace />} />
+              {/* ========================================
+                 FALLBACK / UNKNOWN ROUTES
+                 ======================================== */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+
             </Routes>
           </main>
         </div>

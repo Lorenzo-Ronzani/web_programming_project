@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import TopBar from "../topbar/TopBar";
-import Footer from "../footer/Footer";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { buildApiUrl } from "../../api";
@@ -78,7 +76,6 @@ const DashboardAdmin = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
-      <TopBar />
 
       <main className="container mx-auto flex-1 px-6 py-8">
         {/* Welcome Banner */}
@@ -122,7 +119,6 @@ const DashboardAdmin = () => {
         )}
       </main>
 
-      <Footer />
     </div>
   );
 };

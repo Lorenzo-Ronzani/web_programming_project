@@ -18,6 +18,15 @@ export { getPrograms } from "./api/getPrograms";
 export { getUsers } from "./api/getUsers";
 export { getCoursesUsers } from "./api/getCoursesUsers";
 
+
+
+// Admissions APIs ------------------------------------------
+export { createAdmission } from "./api/createAdmission";
+export { getAdmissions } from "./api/getAdmissions";
+export { getAdmissionById } from "./api/getAdmissionById";
+export { updateAdmission } from "./api/updateAdmission";
+export { deleteAdmission } from "./api/deleteAdmission";
+
 // ------------------------------------------------------
 // Firestore triggers
 // ------------------------------------------------------
