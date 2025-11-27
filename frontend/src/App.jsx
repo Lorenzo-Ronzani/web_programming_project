@@ -49,6 +49,33 @@ import Settings from "./components/users/Settings";
    ================================================ */
 import ProtectedRoute from "./components/routes/ProtectedRoute";
 
+/* ================================================
+   ADMIN — PROGRAMS (NEW FILES)
+   ================================================ */
+import ProgramList from "./pages/admin/programs/ProgramList";
+import AddProgram from "./pages/admin/programs/AddProgram";
+import EditProgram from "./pages/admin/programs/EditProgram";
+
+/* ================================================
+   ADMIN — PROGRAMS SCTRUCTURE
+   ================================================ */
+import ProgramStructureList from "./pages/admin/structure/ProgramStructureList";
+import AddProgramStructure from "./pages/admin/structure/AddProgramStructure";
+import EditProgramStructure from "./pages/admin/structure/EditProgramStructure";
+
+/* ================================================
+   ADMIN — TUITIONS
+   ================================================ */
+import TuitionList from "./pages/admin/tuition/TuitionList";
+import AddTuition from "./pages/admin/tuition/AddTuition";
+import EditTuition from "./pages/admin/tuition/EditTuition";
+
+/* ================================================
+   ADMIN — REQUIREMENTS
+   ================================================ */
+import RequirementsList from "./pages/admin/requirements/RequirementsList";
+import AddRequirement from "./pages/admin/requirements/AddRequirement";
+import EditRequirement from "./pages/admin/requirements/EditRequirement";
 
 /* ================================================
    ADMIN — ADMISSIONS (REAL FILES)
@@ -56,6 +83,15 @@ import ProtectedRoute from "./components/routes/ProtectedRoute";
 import AdmissionsList from "./pages/admin/admissions/AdmissionsList";
 import AddAdmission from "./pages/admin/admissions/AddAdmission";
 import EditAdmission from "./pages/admin/admissions/EditAdmission";
+
+/* ================================================
+   ADMIN — INTAKES (PUBLIC VERSIONS)
+   ================================================ */
+import PublicIntakesList from "./pages/admin/intakes/PublicIntakesList";
+import AddPublicIntake from "./pages/admin/intakes/AddPublicIntake";
+import EditPublicIntake from "./pages/admin/intakes/EditPublicIntake";
+
+
 
 /*
   App.jsx
@@ -122,13 +158,40 @@ function App() {
                   </ProtectedRoute>
                 }
               >
+
                 {/* Default admin dashboard */}
                 <Route index element={<DashboardAdmin />} />
 
-                {/* ADMIN — PROGRAM DETAILS: ADMISSIONS */}
+                {/* ADMIN — PROGRAMS */}
+                <Route path="programs" element={<ProgramList />} />
+                <Route path="programs/add" element={<AddProgram />} />
+                <Route path="programs/edit/:id" element={<EditProgram />} />
+
+                {/* ADMIN — PROGRAM STRUCTURE */}
+                <Route path="structure" element={<ProgramStructureList />} />
+                <Route path="structure/add" element={<AddProgramStructure />} />
+                <Route path="structure/edit/:id" element={<EditProgramStructure />} />
+
+                {/* ADMIN — REQUIEREMENTS */}
+                <Route path="requirements" element={<RequirementsList />} />
+                <Route path="requirements/add" element={<AddRequirement />} />
+                <Route path="requirements/edit/:id" element={<EditRequirement />} />
+
+                {/* ADMIN — TUITION */}
+                <Route path="tuition" element={<TuitionList />} />
+                <Route path="tuition/add" element={<AddTuition />} />
+                <Route path="tuition/edit/:id" element={<EditTuition />} />
+
+                {/* ADMIN — ADMISSIONS */}
                 <Route path="admissions" element={<AdmissionsList />} />
                 <Route path="admissions/add" element={<AddAdmission />} />
                 <Route path="admissions/edit/:id" element={<EditAdmission />} />
+
+                {/* ADMIN — INTAKES (PUBLIC) */}
+                <Route path="intakes" element={<PublicIntakesList />} />
+                <Route path="intakes/add" element={<AddPublicIntake />} />
+                <Route path="intakes/edit/:id" element={<EditPublicIntake />} />
+
               </Route>
 
               {/* ========================================

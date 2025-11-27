@@ -1,12 +1,12 @@
 // ------------------------------------------------------
-// getPrograms.ts - List all programs
+// getRequirements.ts - List all requirements
 // ------------------------------------------------------
 import { onRequest } from "firebase-functions/v2/https";
 import { db } from "../config/firebase";
 
-export const getPrograms = onRequest({ cors: true }, async (req: any, res: any) => {
+export const getRequirements = onRequest({ cors: true }, async (req: any, res: any) => {
   try {
-    const snapshot = await db.collection("programs").get();
+    const snapshot = await db.collection("requirements").get();
 
     const items = snapshot.docs.map((doc: any) => ({
       id: doc.id,
@@ -19,10 +19,10 @@ export const getPrograms = onRequest({ cors: true }, async (req: any, res: any) 
     });
 
   } catch (error: any) {
-    console.error("GET PROGRAMS ERROR:", error);
+    console.error("GET REQUIREMENTS ERROR:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to fetch programs",
+      message: error.message || "Failed to fetch requirements",
     });
   }
 });

@@ -3,8 +3,10 @@ import { buildApiUrl } from "../api";
 /*
   createAdmission
   Sends a POST request to create a new admission entry.
+  Backend requires: program_id, title, requirements, etc.
 */
 export async function createAdmission({
+  program_id,
   title,
   requirements,
   transferability,
@@ -18,6 +20,7 @@ export async function createAdmission({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        program_id,             // now included
         title,
         requirements,
         transferability,
@@ -36,10 +39,11 @@ export async function createAdmission({
   }
 }
 
+
 /*
   updateAdmission
-  Sends a PUT request to update an existing admission entry.
-  The backend expects: { id, ...updatedFields }
+  Sends a PUT request to update an existing admission.
+  Backend requires: id + updated fields.
 */
 export async function updateAdmission(id, data) {
   try {
@@ -49,8 +53,8 @@ export async function updateAdmission(id, data) {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        id,         // required by backend
-        ...data,    // updated values
+        id,
+        ...data,
       }),
     });
 
@@ -67,7 +71,7 @@ export async function updateAdmission(id, data) {
 
 /*
   deleteAdmission
-  Sends a DELETE request to remove an admission by ID.
+  Sends a DELETE request for an admission entry.
 */
 export async function deleteAdmission(id) {
   try {

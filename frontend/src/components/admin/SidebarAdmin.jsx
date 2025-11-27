@@ -50,7 +50,7 @@ const SidebarAdmin = () => {
       </div>
 
       <NavLink
-        to="/admin/programs"
+        to="/dashboardadmin/programs"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
       >
         <Layers size={18} />
@@ -58,7 +58,7 @@ const SidebarAdmin = () => {
       </NavLink>
 
       <NavLink
-        to="/admin/programs/add"
+        to="/dashboardadmin/programs/add"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
       >
         <Layers size={18} />
@@ -69,6 +69,14 @@ const SidebarAdmin = () => {
       <div className="mt-6 mb-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">
         Program Details
       </div>
+      
+      <NavLink
+        to="/dashboardadmin/structure"
+        className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
+      >
+        <Boxes size={18} />
+        Structure
+      </NavLink>
 
       <NavLink
         to="/dashboardadmin/admissions"
@@ -79,7 +87,7 @@ const SidebarAdmin = () => {
       </NavLink>
 
       <NavLink
-        to="/admin/tuition"
+        to="/dashboardadmin/tuition"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
       >
         <DollarSign size={18} />
@@ -87,7 +95,7 @@ const SidebarAdmin = () => {
       </NavLink>
 
       <NavLink
-        to="/admin/intakes"
+        to="/dashboardadmin/intakes"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
       >
         <Calendar size={18} />
@@ -95,20 +103,13 @@ const SidebarAdmin = () => {
       </NavLink>
 
       <NavLink
-        to="/admin/requirements"
+        to="/dashboardadmin/requirements"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
       >
         <ListChecks size={18} />
         Requirements
       </NavLink>
 
-      <NavLink
-        to="/admin/structure"
-        className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
-      >
-        <Boxes size={18} />
-        Structure
-      </NavLink>
 
       {/* SECTION: COURSES */}
       <div className="mt-6 mb-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">
@@ -116,7 +117,7 @@ const SidebarAdmin = () => {
       </div>
 
       <NavLink
-        to="/admin/courses"
+        to="/dashboardadmin/courses"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
       >
         <BookOpen size={18} />
@@ -124,7 +125,7 @@ const SidebarAdmin = () => {
       </NavLink>
 
       <NavLink
-        to="/admin/courses/add"
+        to="/dashboardadmin/courses/add"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
       >
         <BookOpen size={18} />
@@ -137,7 +138,7 @@ const SidebarAdmin = () => {
       </div>
 
       <NavLink
-        to="/admin/students"
+        to="/dashboardadmin/students"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
       >
         <UserRound size={18} />
@@ -145,7 +146,7 @@ const SidebarAdmin = () => {
       </NavLink>
 
       <NavLink
-        to="/admin/students/add"
+        to="/dashboardadmin/students/add"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
       >
         <UserPlus size={18} />

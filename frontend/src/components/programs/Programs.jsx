@@ -22,7 +22,8 @@ function Programs({ limit }) {
         const res = await fetch(url);
         const data = await res.json();
 
-        setPrograms(data);
+        // ✅ CORREÇÃO IMPORTANTE
+        setPrograms(data.items || []);
       } catch (err) {
         console.error("Error fetching programs:", err);
       } finally {
