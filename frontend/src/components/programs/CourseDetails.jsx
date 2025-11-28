@@ -5,6 +5,27 @@ import { buildApiUrl } from "../../api";
 import TopBar from "../../components/topbar/TopBar";
 import TuitionSection from "../../components/programs/TuitionSection";
 
+/* -----------------------------------------------------
+   STATUS COLORS FOR INTAKES (Open, Closed, Not Offered)
+------------------------------------------------------ */
+const statusStyles = {
+  open: {
+    color: "text-green-600",
+    dot: "bg-green-500",
+    label: "Open",
+  },
+  closed: {
+    color: "text-red-600",
+    dot: "bg-red-500",
+    label: "Closed",
+  },
+  not_offered: {
+    color: "text-gray-600",
+    dot: "bg-gray-400",
+    label: "Not Offered",
+  },
+};
+
 const CourseDetails = () => {
   const { id } = useParams();
 
@@ -19,53 +40,41 @@ const CourseDetails = () => {
   useEffect(() => {
     async function loadData() {
       try {
-        // ---------------------------------------
-        // 1) PROGRAM — via getPrograms (filtered)
-        // ---------------------------------------
+        // PROGRAM
         const resPrograms = await fetch(buildApiUrl("getPrograms"));
         const pData = await resPrograms.json();
         const foundProgram = pData.items?.find((p) => p.id === id) || null;
         setProgram(foundProgram);
 
-        // ---------------------------------------
-        // 2) REQUIREMENTS
-        // ---------------------------------------
+        // REQUIREMENTS
         const resReq = await fetch(buildApiUrl("getRequirements"));
         const reqData = await resReq.json();
         const foundReq =
           reqData.items?.find((r) => r.program_id === id) || null;
         setRequirements(foundReq);
 
-        // ---------------------------------------
-        // 3) ADMISSIONS
-        // ---------------------------------------
+        // ADMISSIONS
         const resAdm = await fetch(buildApiUrl("getAdmissions"));
         const admData = await resAdm.json();
         const foundAdm =
           admData.items?.find((a) => a.program_id === id) || null;
         setAdmissions(foundAdm);
 
-        // ---------------------------------------
-        // 4) TUITION
-        // ---------------------------------------
+        // TUITION
         const resTuition = await fetch(buildApiUrl("getTuition"));
         const tData = await resTuition.json();
         const foundTuition =
           tData.items?.find((t) => t.program_id === id) || null;
         setTuition(foundTuition);
 
-        // ---------------------------------------
-        // 5) STRUCTURE
-        // ---------------------------------------
+        // STRUCTURE
         const resStruct = await fetch(buildApiUrl("getProgramStructure"));
         const sData = await resStruct.json();
         const foundStruct =
           sData.items?.find((s) => s.program_id === id) || null;
         setStructure(foundStruct);
 
-        // ---------------------------------------
-        // 6) PUBLIC INTAKES (enabled only)
-        // ---------------------------------------
+        // PUBLIC INTAKES
         const resIntakes = await fetch(buildApiUrl("getPublicIntakes"));
         const iData = await resIntakes.json();
         const enabledIntakes =
@@ -95,18 +104,24 @@ const CourseDetails = () => {
     );
   }
 
-  // Utility to split text into list items
   const splitLines = (text) =>
     text ? text.split("\n").filter((l) => l.trim() !== "") : [];
 
+  /* --------------------------------------------
+      Get formatted label + color for statuses
+  -------------------------------------------- */
+  const getStatus = (value) => {
+    if (!value) return statusStyles.not_offered;
+    if (value === "open") return statusStyles.open;
+    if (value === "closed") return statusStyles.closed;
+    return statusStyles.not_offered;
+  };
+
   return (
     <div className="w-full">
-      {/* TOP BAR */}
       <TopBar />
-      
-      {/* --------------------------------------
-          HERO SECTION
-      --------------------------------------- */}
+
+      {/* HERO */}
       <section className="bg-gradient-to-r from-blue-900 to-blue-600 text-white py-16 px-6 md:px-10">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-8">
           <div>
@@ -145,9 +160,7 @@ const CourseDetails = () => {
         </div>
       </section>
 
-      {/* --------------------------------------
-          ABOUT SECTION
-      --------------------------------------- */}
+      {/* ABOUT */}
       <section className="max-w-6xl mx-auto px-6 md:px-10 py-12">
         <h2 className="text-3xl font-bold text-blue-900 mb-4">About</h2>
         <p className="text-gray-700 leading-relaxed">
@@ -155,13 +168,9 @@ const CourseDetails = () => {
         </p>
       </section>
 
-      {/* --------------------------------------
-          REQUIREMENTS + SOFTWARE
-      --------------------------------------- */}
+      {/* REQUIREMENTS */}
       <section className="bg-gray-50 py-12">
         <div className="max-w-6xl mx-auto px-6 md:px-10 grid md:grid-cols-2 gap-10">
-
-          {/* Left Column */}
           <div>
             <h2 className="text-2xl font-bold text-blue-900 mb-4">
               Admission Requirements
@@ -198,7 +207,6 @@ const CourseDetails = () => {
             )}
           </div>
 
-          {/* Right Column */}
           <div>
             <h2 className="text-2xl font-bold text-blue-900 mb-4">
               Laptop Requirements
@@ -231,16 +239,76 @@ const CourseDetails = () => {
         </div>
       </section>
 
-      {/* --------------------------------------
-          TUITION & FEES (Bow Valley)
-      --------------------------------------- */}
+      {/* -------------------------------------------------------------
+              NEW SECTION — BEAUTIFUL INTAKES (BEFORE TUITION)
+      -------------------------------------------------------------- */}
+      <section className="max-w-6xl mx-auto px-6 md:px-10 py-12">
+        <h2 className="text-3xl font-bold text-blue-900 mb-4">
+          Available Intakes
+        </h2>
+
+        {intakes.length ? (
+          <div className="rounded-xl bg-gray-50 p-6 border border-gray-200">
+
+            {/* Header */}
+            <div className="grid grid-cols-12 font-semibold text-blue-900 mb-3">
+              <div className="col-span-4">Starts in</div>
+              <div className="col-span-4">Domestic</div>
+              <div className="col-span-4">International</div>
+            </div>
+
+            {intakes.map((item, idx) => {
+              const domestic = getStatus(item.domestic_status);
+              const international = getStatus(item.international_status);
+
+              return (
+                <div
+                  key={idx}
+                  className="grid grid-cols-12 items-center py-2 border-t border-gray-200"
+                >
+                  {/* Starts in */}
+                  <div className="col-span-4">
+                    <div className="rounded-md bg-white px-3 py-2 shadow-sm border border-gray-200">
+                      {item.starts_in}
+                    </div>
+                  </div>
+
+                  {/* Domestic */}
+                  <div className="col-span-4">
+                    <div className="flex items-center gap-2 rounded-md bg-white px-3 py-2 shadow-sm border border-gray-200">
+                      <span className={`w-3 h-3 rounded-full ${domestic.dot}`}></span>
+                      <span className={domestic.color}>{domestic.label}</span>
+                    </div>
+                  </div>
+
+                  {/* International */}
+                  <div className="col-span-4">
+                    <div className="flex items-center gap-2 rounded-md bg-white px-3 py-2 shadow-sm border border-gray-200">
+                      <span
+                        className={`w-3 h-3 rounded-full ${international.dot}`}
+                      ></span>
+                      <span className={international.color}>
+                        {international.label}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-gray-600">
+            There are no active public intakes for this program at the moment.
+          </p>
+        )}
+      </section>
+
+      {/* TUITION */}
       <section className="max-w-6xl mx-auto px-6 md:px-10 py-12">
         <TuitionSection tuition={tuition} />
       </section>
 
-      {/* --------------------------------------
-          PROGRAM STRUCTURE
-      --------------------------------------- */}
+      {/* STRUCTURE */}
       {structure && (
         <section className="bg-gray-50 py-12">
           <div className="max-w-6xl mx-auto px-6 md:px-10">
@@ -264,27 +332,6 @@ const CourseDetails = () => {
           </div>
         </section>
       )}
-
-      {/* --------------------------------------
-          ACTIVE INTAKES
-      --------------------------------------- */}
-      <section className="max-w-6xl mx-auto px-6 md:px-10 py-12">
-        <h2 className="text-3xl font-bold text-blue-900 mb-4">
-          Available Intakes
-        </h2>
-
-        {intakes.length ? (
-          <ul className="list-disc ml-6 space-y-1 text-gray-700">
-            {intakes.map((intake, idx) => (
-              <li key={idx}>{intake.starts_in}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-600">
-            There are no active public intakes for this program at the moment.
-          </p>
-        )}
-      </section>
     </div>
   );
 };
