@@ -48,6 +48,7 @@ const AddProgramStructure = () => {
     <div>
       {message && <p className="mb-4 text-blue-600">{message}</p>}
       <ProgramStructureForm programs={programs} onSubmit={handleSubmit} />
+      {message && <p className="mb-4 text-red-600">{message}</p>}
     </div>
   );
 };

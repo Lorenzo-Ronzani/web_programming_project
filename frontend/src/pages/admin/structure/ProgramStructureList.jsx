@@ -1,3 +1,7 @@
+// ------------------------------------------------------
+// ProgramStructureList.jsx
+// Added: Search bar + filtered results (like User List)
+// ------------------------------------------------------
 import React, { useEffect, useState } from "react";
 import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";
@@ -6,7 +10,10 @@ import { deleteProgramStructure } from "../../../api/programStructure";
 
 const ProgramStructureList = () => {
   const [items, setItems] = useState([]);
-  const [programs, setPrograms] = useState({}); // ← MAP: id → title
+  const [filtered, setFiltered] = useState([]);
+  const [programs, setPrograms] = useState({});
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Load program structure
   const loadStructure = async () => {
@@ -15,49 +22,85 @@ const ProgramStructureList = () => {
       id: doc.id,
       ...doc.data(),
     }));
+
     setItems(results);
+    setFiltered(results);
   };
 
-  // Load programs and build a map
+  // Load programs and map id → title
   const loadPrograms = async () => {
     const snap = await getDocs(collection(db, "programs"));
     const map = {};
 
     snap.docs.forEach((doc) => {
-      const d = doc.data();
-      map[doc.id] = d.title || "(Untitled Program)";
+      map[doc.id] = doc.data().title || "(Untitled Program)";
     });
 
     setPrograms(map);
   };
 
   useEffect(() => {
-    loadStructure();
-    loadPrograms();
+    Promise.all([loadStructure(), loadPrograms()]).then(() =>
+      setLoading(false)
+    );
   }, []);
+
+  // SEARCH FILTER
+  useEffect(() => {
+    const text = search.toLowerCase();
+
+    const results = items.filter((item) => {
+      const programName = (programs[item.program_id] || "").toLowerCase();
+      const terms = item.terms?.length?.toString() || "";
+
+      return (
+        programName.includes(text) ||
+        terms.includes(text)
+      );
+    });
+
+    setFiltered(results);
+  }, [search, items, programs]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this structure?")) return;
+
     const res = await deleteProgramStructure(id);
     if (res.success) loadStructure();
     else alert(res.message);
   };
 
+  if (loading) return <p>Loading Program Structure...</p>;
+
   return (
     <div className="bg-white p-8 rounded shadow">
+
+      {/* HEADER */}
       <div className="flex justify-between mb-6">
         <h1 className="text-2xl font-semibold">Program Structure</h1>
 
-        <Link
-          to="/dashboardadmin/structure/add"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          + Add Structure
-        </Link>
+        <div className="flex gap-3">
+          {/* SEARCH INPUT */}
+          <input
+            type="text"
+            placeholder="Search by program or terms..."
+            className="border rounded px-3 py-2 w-64"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          <Link
+            to="/dashboardadmin/structure/add"
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            + Add Structure
+          </Link>
+        </div>
       </div>
 
-      {items.length === 0 ? (
-        <p>No structures found.</p>
+      {/* TABLE */}
+      {filtered.length === 0 ? (
+        <p>No results found.</p>
       ) : (
         <table className="w-full text-left border-collapse">
           <thead>
@@ -69,7 +112,7 @@ const ProgramStructureList = () => {
           </thead>
 
           <tbody>
-            {items.map((item) => (
+            {filtered.map((item) => (
               <tr key={item.id} className="border-b hover:bg-gray-50">
                 <td className="py-3 px-2">
                   {programs[item.program_id] || "Not Found"}
@@ -80,7 +123,7 @@ const ProgramStructureList = () => {
                 <td className="flex gap-3 py-3">
                   <Link
                     to={`/dashboardadmin/structure/edit/${item.id}`}
-                    className="px-3 py-1 bg-yellow-500 text-white rounded"
+                    className="px-3 py-1 bg-blue-500 text-white rounded"
                   >
                     Edit
                   </Link>

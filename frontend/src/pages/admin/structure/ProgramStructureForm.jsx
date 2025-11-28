@@ -24,8 +24,7 @@ const ProgramStructureForm = ({ programs, initialData = null, onSubmit }) => {
   useEffect(() => {
     if (!selectedProgramId || initialData) return; // em edição, não mexe
 
-    const termCount = selectedProgram?.number_of_terms || 4;
-
+    const termCount = selectedProgram?.program_length || 0;
     const generatedTerms = Array.from({ length: termCount }, (_, i) => ({
       term_name: `Term ${i + 1}`,
       courses_text: "",
@@ -88,9 +87,12 @@ const ProgramStructureForm = ({ programs, initialData = null, onSubmit }) => {
           {selectedProgram && (
             <p className="mt-1 text-sm text-gray-500">
               Terms configured in Program:{" "}
-              <strong>{selectedProgram.number_of_terms || 4}</strong>
+              <strong>{selectedProgram.program_length || 4}</strong>
             </p>
           )}
+
+
+
         </div>
 
         {/* Terms */}
@@ -121,7 +123,7 @@ const ProgramStructureForm = ({ programs, initialData = null, onSubmit }) => {
                     Courses (one per line, use course code or title)
                   </label>
                   <textarea
-                    className="w-full border p-2 rounded h-24"
+                    className="w-full border p-2 rounded h-35"
                     value={term.courses_text}
                     onChange={(e) =>
                       handleTermChange(index, "courses_text", e.target.value)

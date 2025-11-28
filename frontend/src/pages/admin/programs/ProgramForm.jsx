@@ -163,27 +163,48 @@ const ProgramForm = ({ initialData, onSubmit }) => {
 
         {/* Color */}
         <div>
-          <label className="block font-semibold mb-1">Color (hex)</label>
-          <input
-            type="text"
+          <label className="block font-semibold mb-1">Select the Color</label>
+          <select
             name="color"
-            placeholder="#0055A5"
             className="w-full border p-2 rounded"
             value={form.color}
             onChange={handleChange}
-          />
+            required
+          >
+            <option value="">Color</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="purple">Purple</option>
+            <option value="amber">Amber</option>
+            <option value="red">Red</option>
+            <option value="indigo">Indigo</option>
+            <option value="cyan">Cyan</option>
+            <option value="pink">Pink</option>
+          </select>
         </div>
 
         {/* Icon */}
         <div>
-          <label className="block font-semibold mb-1">Icon</label>
+          <label className="block font-semibold mb-1">
+            Icon 
+            <a
+              href="https://fonts.google.com/icons?selected=Material+Symbols+Outlined"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 ml-2 underline hover:text-blue-800"
+            >
+              (search icons)
+            </a>
+          </label>
+
           <input
             type="text"
             name="icon"
-            placeholder="Ex: code, business, health"
+            placeholder="Ex: cloud, code, security"
             className="w-full border p-2 rounded"
             value={form.icon}
             onChange={handleChange}
+            required
           />
         </div>
 

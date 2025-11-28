@@ -1,5 +1,5 @@
 // ------------------------------------------------------
-// deleteProgram.ts - Delete a program entry
+// deleteProgram.ts - Delete a program and all related data
 // ------------------------------------------------------
 import { onRequest } from "firebase-functions/v2/https";
 import { db } from "../config/firebase";
@@ -10,17 +10,43 @@ export const deleteProgram = onRequest({ cors: true }, async (req: any, res: any
   }
 
   try {
-    const id = req.query.id;
+    const programId = req.query.id;
 
-    if (!id) {
-      return res.status(400).json({ success: false, message: "Program ID is required" });
+    if (!programId) {
+      return res.status(400).json({
+        success: false,
+        message: "Program ID is required",
+      });
     }
 
-    await db.collection("programs").doc(id).delete();
+    // DELETE PROGRAM
+    await db.collection("programs").doc(programId).delete();
+
+    // DELETE RELATED DOCUMENTS
+    const collectionsToDelete = [
+      "program_structure",
+      "admissions",
+      "public_intakes",
+      "requirements",
+      "tuition",
+    ];
+
+    for (const col of collectionsToDelete) {
+      const snap = await db
+        .collection(col)
+        .where("program_id", "==", programId)
+        .get();
+
+      const batch = db.batch();
+
+      snap.docs.forEach(doc => batch.delete(doc.ref));
+
+      await batch.commit(); // Delete all related documents
+    }
 
     return res.status(200).json({
       success: true,
-      message: "Program deleted successfully",
+      message: "Program and all related data deleted successfully",
     });
 
   } catch (error: any) {

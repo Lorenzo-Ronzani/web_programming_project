@@ -12,6 +12,20 @@ export const createRequirement = onRequest({ cors: true }, async (req: any, res:
   try {
     const data = req.body;
 
+    // VALIDATION: Only one requirement per program
+    const existing = await db
+      .collection("requirements")
+      .where("program_id", "==", data.program_id)
+      .limit(1)
+      .get();
+
+    if (!existing.empty) {
+      return res.status(400).json({
+        success: false,
+        message: "A requirement for this program already exists.",
+      });
+    }
+
     const ref = await db.collection("requirements").add({
       ...data,
       created_at: new Date(),

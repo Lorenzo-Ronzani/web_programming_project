@@ -5,7 +5,6 @@ const RequirementsForm = ({ programs = [], initialData = null, onSubmit }) => {
     program_id: "",
     laptop: "",
     software_tools: "",
-    languages_taught: "",
   });
 
   // Preenche os campos no modo edição
@@ -16,9 +15,6 @@ const RequirementsForm = ({ programs = [], initialData = null, onSubmit }) => {
         laptop: initialData.laptop || "",
         software_tools: Array.isArray(initialData.software_tools)
           ? initialData.software_tools.join("\n")
-          : "",
-        languages_taught: Array.isArray(initialData.languages_taught)
-          ? initialData.languages_taught.join("\n")
           : "",
       });
     }
@@ -37,11 +33,7 @@ const RequirementsForm = ({ programs = [], initialData = null, onSubmit }) => {
       software_tools: form.software_tools
         .split("\n")
         .map((x) => x.trim())
-        .filter(Boolean),
-      languages_taught: form.languages_taught
-        .split("\n")
-        .map((x) => x.trim())
-        .filter(Boolean),
+        .filter(Boolean)
     };
 
     onSubmit(payload);
@@ -80,7 +72,7 @@ const RequirementsForm = ({ programs = [], initialData = null, onSubmit }) => {
           <label className="font-medium">Laptop Requirements</label>
           <textarea
             name="laptop"
-            className="w-full border p-2 rounded h-24"
+            className="w-full border p-2 rounded h-50"
             value={form.laptop}
             onChange={handleChange}
           />
@@ -91,19 +83,8 @@ const RequirementsForm = ({ programs = [], initialData = null, onSubmit }) => {
           <label className="font-medium">Software Tools (one per line)</label>
           <textarea
             name="software_tools"
-            className="w-full border p-2 rounded h-24"
+            className="w-full border p-2 rounded h-50"
             value={form.software_tools}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Languages */}
-        <div>
-          <label className="font-medium">Languages Taught (one per line)</label>
-          <textarea
-            name="languages_taught"
-            className="w-full border p-2 rounded h-24"
-            value={form.languages_taught}
             onChange={handleChange}
           />
         </div>

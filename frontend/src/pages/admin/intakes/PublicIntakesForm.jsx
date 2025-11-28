@@ -1,51 +1,57 @@
-import React, { useEffect, useState } from "react";
+// ------------------------------------------------------
+// PublicIntakesForm.jsx - Clean + centered card layout
+// Matching Admissions layout style
+// ------------------------------------------------------
+import React, { useState, useEffect } from "react";
 
-const PublicIntakesForm = ({ programs = [], initialData = null, onSubmit }) => {
+const PublicIntakesForm = ({ programs, initialData = null, onSubmit }) => {
   const [form, setForm] = useState({
     program_id: "",
     starts_in: "",
-    domestic: "open",
-    international: "open",
+    domestic_status: "not_offered",
+    international_status: "not_offered",
+    enable_status: "enabled",
   });
 
+  // Load initial data when editing
   useEffect(() => {
     if (initialData) {
       setForm({
         program_id: initialData.program_id || "",
         starts_in: initialData.starts_in || "",
-        domestic: initialData.domestic || "open",
-        international: initialData.international || "open",
+        domestic_status: initialData.domestic_status || "not_offered",
+        international_status: initialData.international_status || "not_offered",
+        enable_status: initialData.enable_status || "enabled",
       });
     }
   }, [initialData]);
 
+  // Handle field changes
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Submit form
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(form);
   };
 
   return (
-    <div className="max-w-2xl bg-white shadow p-8 rounded">
-      <h2 className="text-xl font-semibold mb-6">
-        {initialData ? "Edit Public Intake" : "Add Public Intake"}
-      </h2>
+    <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl border">
+      <form onSubmit={handleSubmit} className="space-y-6">
 
-      <form className="space-y-4" onSubmit={handleSubmit}>
         {/* Program */}
         <div>
-          <label className="font-medium">Program</label>
+          <label className="block font-medium mb-1">Program</label>
           <select
             name="program_id"
-            className="w-full border p-2 rounded"
             value={form.program_id}
             onChange={handleChange}
+            className="w-full border p-2 rounded"
             required
           >
-            <option value="">Select a program...</option>
+            <option value="">Select a Program</option>
             {programs.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.title}
@@ -56,47 +62,67 @@ const PublicIntakesForm = ({ programs = [], initialData = null, onSubmit }) => {
 
         {/* Starts In */}
         <div>
-          <label className="font-medium">Starts In</label>
+          <label className="block font-medium mb-1">Starts In</label>
           <input
             type="text"
             name="starts_in"
-            className="w-full border p-2 rounded"
-            placeholder="Example: January 2026"
             value={form.starts_in}
             onChange={handleChange}
+            placeholder="Ex: January 2026"
+            className="w-full border p-2 rounded"
             required
           />
         </div>
 
-        {/* Domestic */}
+        {/* Domestic Status */}
         <div>
-          <label className="font-medium">Domestic Status</label>
+          <label className="block font-medium mb-1">Domestic Status</label>
           <select
-            name="domestic"
-            className="w-full border p-2 rounded"
-            value={form.domestic}
+            name="domestic_status"
+            value={form.domestic_status}
             onChange={handleChange}
+            className="w-full border p-2 rounded"
           >
             <option value="open">Open</option>
             <option value="closed">Closed</option>
+            <option value="not_offered">Not Offered</option>
           </select>
         </div>
 
-        {/* International */}
+        {/* International Status */}
         <div>
-          <label className="font-medium">International Status</label>
+          <label className="block font-medium mb-1">International Status</label>
           <select
-            name="international"
-            className="w-full border p-2 rounded"
-            value={form.international}
+            name="international_status"
+            value={form.international_status}
             onChange={handleChange}
+            className="w-full border p-2 rounded"
           >
             <option value="open">Open</option>
             <option value="closed">Closed</option>
+            <option value="not_offered">Not Offered</option>
           </select>
         </div>
 
-        <button className="bg-blue-600 text-white p-2 rounded w-full" type="submit">
+        {/* Enable Status */}
+        <div>
+          <label className="block font-medium mb-1">Status</label>
+          <select
+            name="enable_status"
+            value={form.enable_status}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+          >
+            <option value="enabled">Enabled</option>
+            <option value="disabled">Disabled</option>
+          </select>
+        </div>
+
+        {/* Submit */}
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+        >
           {initialData ? "Save Changes" : "Create Public Intake"}
         </button>
       </form>

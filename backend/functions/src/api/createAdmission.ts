@@ -23,6 +23,20 @@ export const createAdmission = onRequest({ cors: true }, async (req: any, res: a
       });
     }
 
+    // VALIDATION: Only one admission per program
+    const existing = await db
+      .collection("admissions")
+      .where("program_id", "==", data.program_id)
+      .limit(1)
+      .get();
+
+    if (!existing.empty) {
+      return res.status(400).json({
+        success: false,
+        message: "A admission for this program already exists.",
+      });
+    }
+
     // Normalize requirements into an array
     const normalizedRequirements = Array.isArray(data.requirements)
       ? data.requirements

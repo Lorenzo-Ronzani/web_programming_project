@@ -12,6 +12,28 @@ export const createProgramStructure = onRequest({ cors: true }, async (req: any,
   try {
     const data = req.body;
 
+    if (!data.program_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing program_id",
+      });
+    }
+
+    // VALIDATION: Only one structure per program
+    const existing = await db
+      .collection("program_structure")
+      .where("program_id", "==", data.program_id)
+      .limit(1)
+      .get();
+
+    if (!existing.empty) {
+      return res.status(400).json({
+        success: false,
+        message: "A structure for this program already exists.",
+      });
+    }
+
+    // If no structure exists → create a new one
     const docRef = await db.collection("program_structure").add({
       ...data,
       created_at: new Date(),

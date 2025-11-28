@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const AddAdmission = () => {
   const [programs, setPrograms] = useState([]);
+  const [message, setMessage] = useState("");  // <-- Set the message state
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,8 +21,8 @@ const AddAdmission = () => {
 
   const handleSubmit = async (formData) => {
     const payload = {
-      program_id: formData.program_id, // FIXED
-      title: formData.title,           // FIXED
+      program_id: formData.program_id,
+      title: formData.title,
       requirements: formData.requirements,
       transferability: formData.transferability,
       language_proficiency: formData.language_proficiency,
@@ -33,15 +34,22 @@ const AddAdmission = () => {
     if (result.success) {
       navigate("/dashboardadmin/admissions");
     } else {
-      alert(result.message || "Failed to create admission");
+      setMessage(result.message || "Failed to create admission"); // <-- Set the message
     }
   };
 
   return (
-    <AdmissionsForm
-      programs={programs}
-      onSubmit={handleSubmit}
-    />
+    <div>
+      {/* SHOW MESSAGES HERE*/}
+      {message && (
+        <p className="mb-4 text-red-600 font-semibold">{message}</p>
+      )}
+
+      <AdmissionsForm
+        programs={programs}
+        onSubmit={handleSubmit}
+      />
+    </div>
   );
 };
 

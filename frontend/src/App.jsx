@@ -12,6 +12,7 @@ import { AuthProvider } from "./context/AuthContext";
    ================================================ */
 import Home from "./pages/Home";
 import Programs from "./components/programs/Programs";
+import CourseDetails from "./components/programs/CourseDetails";
 import ProgramsAll from "./pages/ProgramsAll";
 import Courses from "./components/courses/Courses";
 import CoursesAll from "./pages/CoursesAll";
@@ -118,6 +119,8 @@ function App() {
                  ======================================== */}
               <Route path="/" element={<Home />} />
               <Route path="/programs" element={<Programs />} />
+              <Route path="/program/:id" element={<CourseDetails />} />
+
               <Route path="/programsall" element={<ProgramsAll />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/coursesall" element={<CoursesAll />} />

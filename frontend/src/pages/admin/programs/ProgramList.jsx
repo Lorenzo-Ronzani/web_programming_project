@@ -1,3 +1,6 @@
+// ------------------------------------------------------
+// ProgramList.jsx - Program list + search filter
+// ------------------------------------------------------
 import React, { useEffect, useState } from "react";
 import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";
@@ -6,6 +9,8 @@ import { deleteProgram } from "../../../api/programs";
 
 const ProgramList = () => {
   const [programs, setPrograms] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   const loadPrograms = async () => {
@@ -17,6 +22,7 @@ const ProgramList = () => {
       }));
 
       setPrograms(items);
+      setFiltered(items); // initialize
       setLoading(false);
     } catch (err) {
       console.error("Error loading programs:", err);
@@ -25,15 +31,27 @@ const ProgramList = () => {
   };
 
   useEffect(() => {
-    loadPrograms();   // ❗ CORRETO — não é async no useEffect
+    loadPrograms();
   }, []);
+
+  // Filter whenever search changes
+  useEffect(() => {
+    const text = search.toLowerCase();
+
+    const results = programs.filter((p) =>
+      p.title.toLowerCase().includes(text) ||
+      p.credential.toLowerCase().includes(text)
+    );
+
+    setFiltered(results);
+  }, [search, programs]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete program?")) return;
 
     const result = await deleteProgram(id);
     if (result.success) {
-      loadPrograms(); // refresh
+      loadPrograms();
     } else {
       alert(result.message);
     }
@@ -43,18 +61,32 @@ const ProgramList = () => {
 
   return (
     <div className="bg-white p-8 rounded shadow">
+
+      {/* Header */}
       <div className="flex justify-between mb-6">
         <h1 className="text-2xl font-semibold">Programs</h1>
 
-        <Link
-          to="/dashboardadmin/programs/add"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          + Add Program
-        </Link>
+        {/* Search */}
+        <div className="flex gap-3">
+          <input
+            type="text"
+            placeholder="Search by title or credential..."
+            className="border rounded px-3 py-2 w-64"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          <Link
+            to="/dashboardadmin/programs/add"
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            + Add Program
+          </Link>
+        </div>
       </div>
 
-      {programs.length === 0 ? (
+      {/* Table */}
+      {filtered.length === 0 ? (
         <p>No programs found.</p>
       ) : (
         <table className="w-full text-left border-collapse">
@@ -67,7 +99,7 @@ const ProgramList = () => {
           </thead>
 
           <tbody>
-            {programs.map((p) => (
+            {filtered.map((p) => (
               <tr key={p.id} className="border-b hover:bg-gray-50">
                 <td className="py-3 px-2">{p.title}</td>
                 <td className="py-3 px-2">{p.credential}</td>
@@ -75,7 +107,7 @@ const ProgramList = () => {
                 <td className="flex gap-3 py-3">
                   <Link
                     to={`/dashboardadmin/programs/edit/${p.id}`}
-                    className="px-3 py-1 bg-yellow-500 text-white rounded"
+                    className="px-3 py-1 bg-blue-500 text-white rounded"
                   >
                     Edit
                   </Link>

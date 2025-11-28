@@ -12,6 +12,21 @@ export const createTuition = onRequest({ cors: true }, async (req: any, res: any
   try {
     const data = req.body;
 
+    // VALIDATION: Only one tuition per program
+    const existing = await db
+      .collection("tuition")
+      .where("program_id", "==", data.program_id)
+      .limit(1)
+      .get();
+
+    if (!existing.empty) {
+      return res.status(400).json({
+        success: false,
+        message: "A tuition for this program already exists.",
+      });
+    }
+
+
     const ref = await db.collection("tuition").add({
       ...data,
       created_at: new Date(),
