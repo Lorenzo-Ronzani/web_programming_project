@@ -1,3 +1,9 @@
+// ------------------------------------------------------
+// EditTuition.jsx
+// Loads tuition data and formats domestic/international
+// so the TuitionForm always receives valid arrays.
+// ------------------------------------------------------
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
@@ -17,16 +23,71 @@ const EditTuition = () => {
   useEffect(() => {
     const loadAll = async () => {
       try {
+        // ------------------------------------------------------
+        // Load programs and create displayName
+        // ------------------------------------------------------
         const snap = await getDocs(collection(db, "programs"));
-        const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        setPrograms(items);
 
+        const list = snap.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            displayName: `${data.title}${
+              data.credential ? ` (${data.credential})` : ""
+            }`,
+          };
+        });
+
+        // Sort programs alphabetically
+        list.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+        setPrograms(list);
+
+        // ------------------------------------------------------
+        // Load tuition record from backend
+        // ------------------------------------------------------
         const url = buildApiUrl("getTuitionById") + `?id=${id}`;
         const res = await fetch(url);
         const data = await res.json();
 
-        if (data.success) {
-          setInitialData(data.item);
+        if (data.success && data.item) {
+          const item = data.item;
+
+          // ------------------------------------------------------
+          // Normalize domestic terms
+          // domestic can be:
+          // - array
+          // - { estimated_total, terms: [...] }
+          // - undefined
+          // ------------------------------------------------------
+          const domesticTerms = Array.isArray(item.domestic)
+            ? item.domestic
+            : Array.isArray(item.domestic?.terms)
+            ? item.domestic.terms
+            : [];
+
+          // ------------------------------------------------------
+          // Normalize international terms
+          // international can be:
+          // - array
+          // - { estimated_total, terms: [...] }
+          // - undefined
+          // ------------------------------------------------------
+          const internationalTerms = Array.isArray(item.international)
+            ? item.international
+            : Array.isArray(item.international?.terms)
+            ? item.international.terms
+            : [];
+
+          // ------------------------------------------------------
+          // Set final initial data for the form
+          // ------------------------------------------------------
+          setInitialData({
+            program_id: item.program_id || "",
+            domestic: domesticTerms,
+            international: internationalTerms,
+          });
         }
       } catch (err) {
         console.error("Error loading tuition:", err);
@@ -38,8 +99,12 @@ const EditTuition = () => {
     loadAll();
   }, [id]);
 
-  const handleSubmit = async (payload) => {
-    const res = await updateTuition(id, payload);
+  // ------------------------------------------------------
+  // Submit handler
+  // ------------------------------------------------------
+  const handleSubmit = async (formData) => {
+    const res = await updateTuition(id, formData);
+
     if (res.success) {
       navigate("/dashboardadmin/tuition");
     } else {
@@ -47,7 +112,7 @@ const EditTuition = () => {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>Loading tuition...</p>;
   if (!initialData) return <p>Tuition not found.</p>;
 
   return (

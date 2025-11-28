@@ -7,15 +7,27 @@ import { useNavigate } from "react-router-dom";
 
 const AddAdmission = () => {
   const [programs, setPrograms] = useState([]);
-  const [message, setMessage] = useState("");  // <-- Set the message state
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     async function loadPrograms() {
       const snap = await getDocs(collection(db, "programs"));
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      const list = snap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          ...data,
+          displayName: `${data.title}${
+            data.credential ? ` (${data.credential})` : ""
+          }`,
+        };
+      });
+
       setPrograms(list);
     }
+
     loadPrograms();
   }, []);
 
@@ -34,21 +46,15 @@ const AddAdmission = () => {
     if (result.success) {
       navigate("/dashboardadmin/admissions");
     } else {
-      setMessage(result.message || "Failed to create admission"); // <-- Set the message
+      setMessage(result.message || "Failed to create admission");
     }
   };
 
   return (
     <div>
-      {/* SHOW MESSAGES HERE*/}
-      {message && (
-        <p className="mb-4 text-red-600 font-semibold">{message}</p>
-      )}
+      {message && <p className="mb-4 text-red-600 font-semibold">{message}</p>}
 
-      <AdmissionsForm
-        programs={programs}
-        onSubmit={handleSubmit}
-      />
+      <AdmissionsForm programs={programs} onSubmit={handleSubmit} />
     </div>
   );
 };

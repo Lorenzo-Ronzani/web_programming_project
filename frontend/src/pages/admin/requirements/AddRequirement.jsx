@@ -1,61 +1,74 @@
 // ------------------------------------------------------
-// AddRequirement.jsx - Create a new program requirement
+// AddRequirement.jsx
+// Premium Add Form with Combobox search for Programs.
+// Consistent with Admissions, Tuition, Structure, Intakes.
 // ------------------------------------------------------
+
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";
 import RequirementsForm from "./RequirementsForm";
 import { createRequirement } from "../../../api/requirements";
-import { useNavigate } from "react-router-dom";
 
 const AddRequirement = () => {
-  const [programs, setPrograms] = useState([]);
-
-  // Stores backend validation or error messages
-  const [message, setMessage] = useState("");
-
   const navigate = useNavigate();
 
-  // Load all programs so the user can select one
+  const [programs, setPrograms] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ------------------------------------------------------
+  // Load programs and format displayName: Title (Credential)
+  // ------------------------------------------------------
   useEffect(() => {
     const loadPrograms = async () => {
       try {
         const snap = await getDocs(collection(db, "programs"));
-        const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        setPrograms(items);
-      } catch (err) {
-        console.error("Error loading programs:", err);
-        setMessage("Failed to load programs.");
+        const list = snap.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            displayName: `${data.title}${
+              data.credential ? ` (${data.credential})` : ""
+            }`,
+          };
+        });
+
+        // Sort alphabetically
+        list.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+        setPrograms(list);
+      } catch (error) {
+        console.error("Error loading programs:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     loadPrograms();
   }, []);
 
-  // Handle form submission
+  // ------------------------------------------------------
+  // Submit Handler
+  // ------------------------------------------------------
   const handleSubmit = async (formData) => {
-    const result = await createRequirement(formData);
+    const res = await createRequirement(formData);
 
-    if (result.success) {
+    if (res.success) {
       navigate("/dashboardadmin/requirements");
     } else {
-      // Display message in the form instead of using alert()
-      setMessage(result.message || "Failed to create requirement");
+      alert(res.message || "Failed to create requirement");
     }
   };
 
-  return (
-    <div>
-      {/* Display error or backend messages above the form */}
-      {message && (
-        <p className="mb-4 text-red-600 font-semibold">{message}</p>
-      )}
+  if (loading) return <p>Loading...</p>;
 
-      <RequirementsForm
-        programs={programs}
-        onSubmit={handleSubmit}
-      />
-    </div>
+  return (
+    <RequirementsForm
+      programs={programs}
+      onSubmit={handleSubmit}
+    />
   );
 };
 

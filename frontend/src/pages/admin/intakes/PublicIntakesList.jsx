@@ -1,5 +1,6 @@
 // ------------------------------------------------------
-// PublicIntakesList.jsx - Search + JOIN Programs + Clean UI
+// PublicIntakesList.jsx - Premium version
+// Program (Credential) + Sorting + Search
 // ------------------------------------------------------
 import React, { useEffect, useState } from "react";
 import { db } from "../../../firebase";
@@ -15,32 +16,44 @@ import { Link } from "react-router-dom";
 const PublicIntakesList = () => {
   const [intakes, setIntakes] = useState([]);
   const [filtered, setFiltered] = useState([]);
-  const [programMap, setProgramMap] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [programsMap, setProgramsMap] = useState({});
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // Load intakes + programs (JOIN)
+  // Sorting config
+  const [sortConfig, setSortConfig] = useState({
+    key: "program",
+    direction: "asc",
+  });
+
+  // LOAD DATA
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Load intakes
         const intakeSnap = await getDocs(collection(db, "public_intakes"));
-        const intakeItems = intakeSnap.docs.map((d) => ({
+        const intakeData = intakeSnap.docs.map((d) => ({
           id: d.id,
           ...d.data(),
         }));
 
-        setIntakes(intakeItems);
-        setFiltered(intakeItems); // initialize list
-
         // Load programs
-        const programSnap = await getDocs(collection(db, "programs"));
+        const progSnap = await getDocs(collection(db, "programs"));
         const map = {};
-        programSnap.docs.forEach((d) => {
-          map[d.id] = d.data().title;
+
+        progSnap.docs.forEach((doc) => {
+          const data = doc.data();
+          const name = `${data.title}${
+            data.credential ? ` (${data.credential})` : ""
+          }`;
+          map[doc.id] = name;
         });
-        setProgramMap(map);
+
+        setProgramsMap(map);
+        setIntakes(intakeData);
+        setFiltered(intakeData);
       } catch (err) {
-        console.error("Error loading list:", err);
+        console.error("Error loading public intakes:", err);
       } finally {
         setLoading(false);
       }
@@ -53,12 +66,12 @@ const PublicIntakesList = () => {
   useEffect(() => {
     const text = search.toLowerCase();
 
-    const results = intakes.filter((item) => {
-      const program = (programMap[item.program_id] || "").toLowerCase();
-      const starts = (item.starts_in || "").toLowerCase();
-      const domestic = (item.domestic_status || "").toLowerCase();
-      const international = (item.international_status || "").toLowerCase();
-      const enable = (item.enable_status || "").toLowerCase();
+    const results = intakes.filter((i) => {
+      const program = (programsMap[i.program_id] || "").toLowerCase();
+      const starts = (i.starts_in || "").toLowerCase();
+      const domestic = (i.domestic_status || "").toLowerCase();
+      const international = (i.international_status || "").toLowerCase();
+      const enable = (i.enable_status || "").toLowerCase();
 
       return (
         program.includes(text) ||
@@ -70,144 +83,222 @@ const PublicIntakesList = () => {
     });
 
     setFiltered(results);
-  }, [search, intakes, programMap]);
+  }, [search, intakes, programsMap]);
 
-  // Delete intake
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this public intake?"))
-      return;
+  // SORTING HANDLER
+  const sortData = (key) => {
+    let direction = "asc";
 
-    await deleteDoc(doc(db, "public_intakes", id));
-    setIntakes(intakes.filter((i) => i.id !== id));
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+
+    setSortConfig({ key, direction });
+
+    const sorted = [...filtered].sort((a, b) => {
+      let aVal = "";
+      let bVal = "";
+
+      if (key === "program") {
+        aVal = programsMap[a.program_id] || "";
+        bVal = programsMap[b.program_id] || "";
+      }
+
+      if (key === "starts_in") {
+        aVal = a.starts_in || "";
+        bVal = b.starts_in || "";
+      }
+
+      if (key === "domestic") {
+        aVal = a.domestic_status || "";
+        bVal = b.domestic_status || "";
+      }
+
+      if (key === "international") {
+        aVal = a.international_status || "";
+        bVal = b.international_status || "";
+      }
+
+      if (key === "status") {
+        aVal = a.enable_status || "";
+        bVal = b.enable_status || "";
+      }
+
+      if (aVal < bVal) return direction === "asc" ? -1 : 1;
+      if (aVal > bVal) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setFiltered(sorted);
   };
 
-  // Toggle enable / disable
-  const toggleStatus = async (intake) => {
-    const newStatus =
-      intake.enable_status === "enabled" ? "disabled" : "enabled";
+  const arrow = (key) => {
+    if (sortConfig.key !== key) return "↕";
+    return sortConfig.direction === "asc" ? "↑" : "↓";
+  };
 
-    await updateDoc(doc(db, "public_intakes", intake.id), {
+  // DELETE
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this intake?")) return;
+
+    await deleteDoc(doc(db, "public_intakes", id));
+    setIntakes((prev) => prev.filter((i) => i.id !== id));
+  };
+
+  // ENABLE/DISABLE
+  const toggleStatus = async (item) => {
+    const newStatus =
+      item.enable_status === "enabled" ? "disabled" : "enabled";
+
+    await updateDoc(doc(db, "public_intakes", item.id), {
       enable_status: newStatus,
     });
 
     setIntakes((prev) =>
       prev.map((i) =>
-        i.id === intake.id ? { ...i, enable_status: newStatus } : i
+        i.id === item.id ? { ...i, enable_status: newStatus } : i
       )
     );
   };
 
-  if (loading) return <p>Loading public intakes...</p>;
+  if (loading) return <p>Loading Public Intakes...</p>;
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md">
-      <div className="flex justify-between items-center mb-6">
+    <div className="bg-white p-8 rounded shadow">
+      {/* HEADER */}
+      <div className="flex justify-between mb-6">
         <h2 className="text-2xl font-semibold">Public Available Intakes</h2>
 
         <div className="flex gap-3">
-          {/* SEARCH */}
           <input
             type="text"
-            placeholder="Search..."
-            className="border rounded px-3 py-2 w-64"
+            placeholder="Search program, dates, statuses..."
+            className="border px-3 py-2 rounded w-64"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
 
           <Link
             to="/dashboardadmin/intakes/add"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            + Add Public Intake
+            + Add Intake
           </Link>
         </div>
       </div>
 
-      <table className="w-full">
+      {/* TABLE */}
+      <table className="w-full border-collapse text-left">
         <thead>
-          <tr className="text-left text-gray-700 border-b">
-            <th className="py-2 px-3">Program</th>
-            <th className="py-2 px-3">Starts In</th>
-            <th className="py-2 px-3">Domestic</th>
-            <th className="py-2 px-3">International</th>
-            <th className="py-2 px-3">Status</th>
-            <th className="py-2 px-3">Actions</th>
+          <tr className="border-b text-gray-700">
+            <th
+              className="py-3 px-2 cursor-pointer"
+              onClick={() => sortData("program")}
+            >
+              Program {arrow("program")}
+            </th>
+
+            <th
+              className="py-3 px-2 cursor-pointer"
+              onClick={() => sortData("starts_in")}
+            >
+              Starts In {arrow("starts_in")}
+            </th>
+
+            <th
+              className="py-3 px-2 cursor-pointer"
+              onClick={() => sortData("domestic")}
+            >
+              Domestic {arrow("domestic")}
+            </th>
+
+            <th
+              className="py-3 px-2 cursor-pointer"
+              onClick={() => sortData("international")}
+            >
+              International {arrow("international")}
+            </th>
+
+            <th
+              className="py-3 px-2 cursor-pointer"
+              onClick={() => sortData("status")}
+            >
+              Status {arrow("status")}
+            </th>
+
+            <th className="py-3 px-2">Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          {filtered.map((intake) => (
-            <tr key={intake.id} className="border-b">
-              {/* Program Title */}
-              <td className="py-3 px-3">
-                {programMap[intake.program_id] || "Unknown Program"}
+          {filtered.map((item) => (
+            <tr
+              key={item.id}
+              className="border-b hover:bg-gray-50 transition"
+            >
+              <td className="py-3 px-2">
+                {programsMap[item.program_id] || "Unknown Program"}
               </td>
 
-              {/* Starts In */}
-              <td className="py-3 px-3">{intake.starts_in}</td>
+              <td className="py-3 px-2">{item.starts_in}</td>
 
               {/* Domestic */}
-              <td className="py-3 px-3">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`h-3 w-3 rounded-full ${
-                      intake.domestic_status === "open"
-                        ? "bg-green-500"
-                        : intake.domestic_status === "closed"
-                        ? "bg-red-500"
-                        : "bg-gray-400"
-                    }`}
-                  ></span>
-                  <span className="capitalize">
-                    {(intake.domestic_status || "").replace("_", " ")}
-                  </span>
-                </div>
+              <td className="py-3 px-2">
+                <span
+                  className={`inline-block h-3 w-3 rounded-full mr-2 ${
+                    item.domestic_status === "open"
+                      ? "bg-green-500"
+                      : item.domestic_status === "closed"
+                      ? "bg-red-500"
+                      : "bg-gray-400"
+                  }`}
+                ></span>
+                <span className="capitalize">
+                  {item.domestic_status.replace("_", " ")}
+                </span>
               </td>
 
               {/* International */}
-              <td className="py-3 px-3">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`h-3 w-3 rounded-full ${
-                      intake.international_status === "open"
-                        ? "bg-green-500"
-                        : intake.international_status === "closed"
-                        ? "bg-red-500"
-                        : "bg-gray-400"
-                    }`}
-                  ></span>
-                  <span className="capitalize">
-                    {(intake.international_status || "").replace("_", " ")}
-                  </span>
-                </div>
+              <td className="py-3 px-2">
+                <span
+                  className={`inline-block h-3 w-3 rounded-full mr-2 ${
+                    item.international_status === "open"
+                      ? "bg-green-500"
+                      : item.international_status === "closed"
+                      ? "bg-red-500"
+                      : "bg-gray-400"
+                  }`}
+                ></span>
+                <span className="capitalize">
+                  {item.international_status.replace("_", " ")}
+                </span>
               </td>
 
               {/* Enable / Disable */}
-              <td className="py-3 px-3">
+              <td className="py-3 px-2">
                 <button
-                  onClick={() => toggleStatus(intake)}
-                  className={`px-3 py-1 text-sm font-medium rounded-full cursor-pointer transition ${
-                    intake.enable_status === "enabled"
+                  onClick={() => toggleStatus(item)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    item.enable_status === "enabled"
                       ? "bg-green-100 text-green-700"
-                      : "bg-gray-200 text-gray-600"
+                      : "bg-gray-300 text-gray-700"
                   }`}
                 >
-                  {intake.enable_status === "enabled" ? "Active" : "Inactive"}
+                  {item.enable_status === "enabled" ? "Active" : "Inactive"}
                 </button>
               </td>
 
-              {/* Actions */}
-              <td className="py-3 px-3 flex gap-2">
+              <td className="py-3 px-2 flex gap-3">
                 <Link
-                  to={`/dashboardadmin/intakes/edit/${intake.id}`}
-                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                  to={`/dashboardadmin/intakes/edit/${item.id}`}
+                  className="px-3 py-1 bg-blue-500 text-white rounded"
                 >
                   Edit
                 </Link>
 
                 <button
-                  onClick={() => handleDelete(intake.id)}
-                  className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
+                  onClick={() => handleDelete(item.id)}
+                  className="px-3 py-1 bg-red-600 text-white rounded"
                 >
                   Delete
                 </button>

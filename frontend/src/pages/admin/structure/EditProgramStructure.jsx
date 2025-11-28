@@ -1,3 +1,9 @@
+// ------------------------------------------------------
+// EditProgramStructure.jsx
+// Loads programs with displayName and sends them to the form.
+// The form will show the program field disabled in Edit mode.
+// ------------------------------------------------------
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ProgramStructureForm from "./ProgramStructureForm";
@@ -17,12 +23,26 @@ const EditProgramStructure = () => {
   useEffect(() => {
     const loadAll = async () => {
       try {
-        // carrega programs
+        // Load programs and create displayName
         const snap = await getDocs(collection(db, "programs"));
-        const progs = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setPrograms(progs);
 
-        // carrega estrutura pelo backend
+        const list = snap.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            displayName: `${data.title}${
+              data.credential ? ` (${data.credential})` : ""
+            }`,
+          };
+        });
+
+        // Sort alphabetically
+        list.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+        setPrograms(list);
+
+        // Load structure from backend
         const url = buildApiUrl("getProgramStructureById") + `?id=${id}`;
         const res = await fetch(url);
         const data = await res.json();
@@ -42,6 +62,7 @@ const EditProgramStructure = () => {
 
   const handleSubmit = async (formData) => {
     const res = await updateProgramStructure(id, formData);
+
     if (res.success) {
       navigate("/dashboardadmin/structure");
     } else {

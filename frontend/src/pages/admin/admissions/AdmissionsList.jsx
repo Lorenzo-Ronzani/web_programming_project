@@ -1,7 +1,7 @@
 // ------------------------------------------------------
-// AdmissionsList.jsx - Searchable list + clean UI
+// AdmissionsList.jsx - Improved with sorting + better program display
 // ------------------------------------------------------
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { Link } from "react-router-dom";
@@ -14,19 +14,37 @@ const AdmissionsList = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Sorting
+  const [sortConfig, setSortConfig] = useState({
+    key: "program",
+    direction: "asc",
+  });
+
+  // Load data
   const loadData = async () => {
     setLoading(true);
+
     const admSnap = await getDocs(collection(db, "admissions"));
     const programsSnap = await getDocs(collection(db, "programs"));
 
-    const admissions = admSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    // Admissions data
+    const admissions = admSnap.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }));
+
+    // Program title + credential map
+    const map = {};
+    programsSnap.docs.forEach((doc) => {
+      const data = doc.data();
+      map[doc.id] = `${data.title}${
+        data.credential ? ` (${data.credential})` : ""
+      }`;
+    });
+
+    setProgramsMap(map);
     setItems(admissions);
     setFiltered(admissions);
-
-    const map = {};
-    programsSnap.docs.forEach((d) => (map[d.id] = d.data().title));
-    setProgramsMap(map);
-
     setLoading(false);
   };
 
@@ -41,6 +59,7 @@ const AdmissionsList = () => {
     const results = items.filter((item) => {
       const program = (programsMap[item.program_id] || "").toLowerCase();
       const title = (item.title || "").toLowerCase();
+      const credential = program.split("(")[1] || "";
       const reqCount = Array.isArray(item.requirements)
         ? item.requirements.length.toString()
         : "0";
@@ -48,12 +67,54 @@ const AdmissionsList = () => {
       return (
         program.includes(text) ||
         title.includes(text) ||
+        credential.includes(text) ||
         reqCount.includes(text)
       );
     });
 
     setFiltered(results);
   }, [search, items, programsMap]);
+
+  // SORTING HANDLER
+  const sortData = (key) => {
+    let direction = "asc";
+
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+
+    setSortConfig({ key, direction });
+
+    const sorted = [...filtered].sort((a, b) => {
+      let aVal = "";
+      let bVal = "";
+
+      if (key === "program") {
+        aVal = programsMap[a.program_id] || "";
+        bVal = programsMap[b.program_id] || "";
+      }
+      if (key === "title") {
+        aVal = a.title || "";
+        bVal = b.title || "";
+      }
+      if (key === "requirements") {
+        aVal = Array.isArray(a.requirements) ? a.requirements.length : 0;
+        bVal = Array.isArray(b.requirements) ? b.requirements.length : 0;
+      }
+
+      if (aVal < bVal) return direction === "asc" ? -1 : 1;
+      if (aVal > bVal) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setFiltered(sorted);
+  };
+
+  // Arrow helper
+  const sortArrow = (key) => {
+    if (sortConfig.key !== key) return "↕";
+    return sortConfig.direction === "asc" ? "↑" : "↓";
+  };
 
   const handleDelete = async (id) => {
     if (!confirm("Delete this admission?")) return;
@@ -71,10 +132,9 @@ const AdmissionsList = () => {
         <h1 className="text-2xl font-semibold">Admissions</h1>
 
         <div className="flex gap-3">
-          {/* SEARCH */}
           <input
             type="text"
-            placeholder="Search by program, title..."
+            placeholder="Search by program, title, credential..."
             className="border rounded px-3 py-2 w-64"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -96,9 +156,27 @@ const AdmissionsList = () => {
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b text-gray-600">
-              <th className="py-3 px-2">Program</th>
-              <th className="py-3 px-2">Title</th>
-              <th className="py-3 px-2">Requirements Count</th>
+              <th
+                onClick={() => sortData("program")}
+                className="py-3 px-2 cursor-pointer select-none"
+              >
+                Program {sortArrow("program")}
+              </th>
+
+              <th
+                onClick={() => sortData("title")}
+                className="py-3 px-2 cursor-pointer select-none"
+              >
+                Title {sortArrow("title")}
+              </th>
+
+              <th
+                onClick={() => sortData("requirements")}
+                className="py-3 px-2 cursor-pointer select-none"
+              >
+                Requirements {sortArrow("requirements")}
+              </th>
+
               <th className="py-3 px-2">Actions</th>
             </tr>
           </thead>

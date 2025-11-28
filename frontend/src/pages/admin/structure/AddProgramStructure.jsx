@@ -1,3 +1,8 @@
+// ------------------------------------------------------
+// AddProgramStructure.jsx
+// Loads programs with displayName and passes to the form.
+// ------------------------------------------------------
+
 import React, { useEffect, useState } from "react";
 import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";
@@ -15,10 +20,21 @@ const AddProgramStructure = () => {
     const loadPrograms = async () => {
       try {
         const snap = await getDocs(collection(db, "programs"));
-        const items = snap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+
+        const items = snap.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            displayName: `${data.title}${
+              data.credential ? ` (${data.credential})` : ""
+            }`,
+          };
+        });
+
+        // Sort alphabetically
+        items.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
         setPrograms(items);
       } catch (err) {
         console.error("Error loading programs:", err);
@@ -32,6 +48,7 @@ const AddProgramStructure = () => {
 
   const handleSubmit = async (data) => {
     const res = await createProgramStructure(data);
+
     if (res.success) {
       setMessage("Program structure created successfully!");
       setTimeout(() => {
@@ -48,7 +65,6 @@ const AddProgramStructure = () => {
     <div>
       {message && <p className="mb-4 text-blue-600">{message}</p>}
       <ProgramStructureForm programs={programs} onSubmit={handleSubmit} />
-      {message && <p className="mb-4 text-red-600">{message}</p>}
     </div>
   );
 };

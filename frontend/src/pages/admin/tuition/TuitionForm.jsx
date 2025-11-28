@@ -1,318 +1,411 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { db } from "../../../firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+// ------------------------------------------------------
+// TuitionForm.jsx
+// Handles Add + Edit tuition data.
+// In Add mode: program is searchable Combobox.
+// In Edit mode: program is shown in read-only format.
+// Tuition is divided into Domestic and International tables.
+// ------------------------------------------------------
 
-const TuitionForm = ({ programs = [], initialData = null, onSubmit }) => {
-  const [programId, setProgramId] = useState(initialData?.program_id || "");
-  const [terms, setTerms] = useState([]); // ["Term 1", "Term 2", ...]
-  const [domestic, setDomestic] = useState([]);
-  const [international, setInternational] = useState([]);
+import React, {
+  Fragment,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Combobox, Transition } from "@headlessui/react";
+import {
+  CheckIcon,
+  ChevronUpDownIcon,
+} from "@heroicons/react/20/solid";
+
+const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
+  const [selectedProgram, setSelectedProgram] = useState(null);
+  const [queryText, setQueryText] = useState("");
+
+  const [domesticTerms, setDomesticTerms] = useState([]);
+  const [internationalTerms, setInternationalTerms] = useState([]);
   const [activeTab, setActiveTab] = useState("domestic");
-  const [loadingStructure, setLoadingStructure] = useState(false);
+  const isEditMode = Boolean(initialData);
 
-  const selectedProgram = useMemo(
-    () => programs.find((p) => p.id === programId),
-    [programId, programs]
-  );
-
-  // Carrega termos a partir do Program Structure ao selecionar programa (modo ADD)
+  // ------------------------------------------------------
+  // Load initial data from Edit Mode
+  // ------------------------------------------------------
   useEffect(() => {
-    if (!programId || initialData) return;
+    if (!initialData || programs.length === 0) return;
 
-    const loadStructure = async () => {
-      setLoadingStructure(true);
-      try {
-        const q = query(
-          collection(db, "program_structure"),
-          where("program_id", "==", programId)
-        );
-        const snap = await getDocs(q);
-
-        if (!snap.empty) {
-          const doc = snap.docs[0].data();
-          const termNames =
-            doc.terms?.map((t) => t.term_name || "").filter(Boolean) || [];
-
-          setTerms(termNames);
-
-          setDomestic(
-            termNames.map(() => ({
-              tuition_fee: "",
-              additional_fees: "",
-            }))
-          );
-          setInternational(
-            termNames.map(() => ({
-              tuition_fee: "",
-              additional_fees: "",
-            }))
-          );
-        } else {
-          setTerms([]);
-          setDomestic([]);
-          setInternational([]);
-        }
-      } catch (err) {
-        console.error("Error loading program structure:", err);
-      } finally {
-        setLoadingStructure(false);
-      }
-    };
-
-    loadStructure();
-  }, [programId, initialData]);
-
-  // Preenche dados no modo edição
-  useEffect(() => {
-    if (!initialData) return;
-
-    setProgramId(initialData.program_id || "");
-
-    const domesticTerms = initialData.domestic?.terms || [];
-    const internationalTerms = initialData.international?.terms || [];
-
-    const termNames =
-      domesticTerms.length > 0
-        ? domesticTerms.map((t) => t.term)
-        : internationalTerms.map((t) => t.term);
-
-    setTerms(termNames);
-
-    setDomestic(
-      termNames.map((name, idx) => ({
-        tuition_fee: domesticTerms[idx]?.tuition_fee ?? "",
-        additional_fees: domesticTerms[idx]?.additional_fees ?? "",
-      }))
+    // Pre-select program
+    const programFound = programs.find(
+      (p) => p.id === initialData.program_id
     );
+    setSelectedProgram(programFound || null);
 
-    setInternational(
-      termNames.map((name, idx) => ({
-        tuition_fee: internationalTerms[idx]?.tuition_fee ?? "",
-        additional_fees: internationalTerms[idx]?.additional_fees ?? "",
+    // Setup terms
+    setDomesticTerms(initialData.domestic || []);
+    setInternationalTerms(initialData.international || []);
+  }, [initialData, programs]);
+
+  // ------------------------------------------------------
+  // Generate Display Names for Programs
+  // ------------------------------------------------------
+  const formattedPrograms = useMemo(() => {
+    return programs
+      .map((p) => ({
+        ...p,
+        displayName: `${p.title}${
+          p.credential ? ` (${p.credential})` : ""
+        }`,
       }))
-    );
-  }, [initialData]);
+      .sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }, [programs]);
 
-  const handleChange = (type, index, field, value) => {
-    if (type === "domestic") {
-      setDomestic((prev) =>
+  // ------------------------------------------------------
+  // Combobox Search Filter
+  // ------------------------------------------------------
+  const filteredPrograms = useMemo(() => {
+    if (!queryText) return formattedPrograms;
+    return formattedPrograms.filter((p) =>
+      p.displayName.toLowerCase().includes(queryText.toLowerCase())
+    );
+  }, [queryText, formattedPrograms]);
+
+  // ------------------------------------------------------
+  // Handle Changes in Tuition Fields
+  // ------------------------------------------------------
+  const handleTermChange = (index, field, value, isDomestic = true) => {
+    if (isDomestic) {
+      setDomesticTerms((prev) =>
         prev.map((t, i) =>
-          i === index ? { ...t, [field]: value } : { ...t }
+          i === index ? { ...t, [field]: value } : t
         )
       );
     } else {
-      setInternational((prev) =>
+      setInternationalTerms((prev) =>
         prev.map((t, i) =>
-          i === index ? { ...t, [field]: value } : { ...t }
+          i === index ? { ...t, [field]: value } : t
         )
       );
     }
   };
 
-  const calcTotal = (row) => {
-    const tuition = Number(row.tuition_fee || 0);
-    const add = Number(row.additional_fees || 0);
-    return tuition + add;
+  // ------------------------------------------------------
+  // Fee Calculations
+  // ------------------------------------------------------
+  const calcTotal = (fee, add) => {
+    const f = parseFloat(fee || 0);
+    const a = parseFloat(add || 0);
+    return f + a;
   };
 
-  const calcEstimatedTotal = (rows) =>
-    rows.reduce((sum, r) => sum + calcTotal(r), 0);
+  const calcEstimatedTotal = (list) =>
+    list.reduce(
+      (sum, t) => sum + calcTotal(t.tuition_fee, t.additional_fees),
+      0
+    );
 
+  // ------------------------------------------------------
+  // Submit Handler
+  // ------------------------------------------------------
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const programId = selectedProgram?.id;
     if (!programId) {
       alert("Please select a program.");
       return;
     }
 
-    const domesticTerms = terms.map((name, idx) => {
-      const row = domestic[idx] || {};
-      const total = calcTotal(row);
-      return {
-        term: name,
-        tuition_fee: Number(row.tuition_fee || 0),
-        additional_fees: Number(row.additional_fees || 0),
-        total,
-      };
-    });
-
-    const internationalTerms = terms.map((name, idx) => {
-      const row = international[idx] || {};
-      const total = calcTotal(row);
-      return {
-        term: name,
-        tuition_fee: Number(row.tuition_fee || 0),
-        additional_fees: Number(row.additional_fees || 0),
-        total,
-      };
-    });
-
     const payload = {
       program_id: programId,
-      domestic: {
-        terms: domesticTerms,
-        estimated_total: calcEstimatedTotal(domestic),
-      },
-      international: {
-        terms: internationalTerms,
-        estimated_total: calcEstimatedTotal(international),
-      },
+      domestic: domesticTerms,
+      international: internationalTerms,
     };
 
     onSubmit(payload);
   };
 
-  const renderTable = (rows, typeLabel) => {
-    const estimated = calcEstimatedTotal(rows);
-
-    return (
-      <div className="mt-4">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b bg-blue-50 text-gray-700">
-              <th className="py-2 px-3">Term</th>
-              <th className="py-2 px-3">Tuition fees</th>
-              <th className="py-2 px-3">Additional fees</th>
-              <th className="py-2 px-3">Total fees*</th>
-            </tr>
-          </thead>
-          <tbody>
-            {terms.map((termName, idx) => {
-              const row = rows[idx] || { tuition_fee: "", additional_fees: "" };
-              const total = calcTotal(row);
-
-              return (
-                <tr key={idx} className="border-b">
-                  <td className="py-2 px-3">{termName}</td>
-                  <td className="py-2 px-3">
-                    <input
-                      type="number"
-                      className="w-full border rounded p-1"
-                      value={row.tuition_fee}
-                      onChange={(e) =>
-                        handleChange(
-                          typeLabel,
-                          idx,
-                          "tuition_fee",
-                          e.target.value
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="py-2 px-3">
-                    <input
-                      type="number"
-                      className="w-full border rounded p-1"
-                      value={row.additional_fees}
-                      onChange={(e) =>
-                        handleChange(
-                          typeLabel,
-                          idx,
-                          "additional_fees",
-                          e.target.value
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="py-2 px-3 font-semibold">
-                    ${total.toLocaleString("en-CA")}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-
-        <div className="mt-4 text-right font-semibold">
-          Estimated total tuition:{" "}
-          <span className="text-blue-700">
-            ${estimated.toLocaleString("en-CA")}
-          </span>
-        </div>
-
-        <p className="mt-2 text-xs text-gray-500">
-          *All tuition and fees are subject to change. Program tuitions are
-          estimates only.
-        </p>
-      </div>
-    );
-  };
-
   return (
-    <div className="bg-white shadow p-8 rounded max-w-5xl">
+    <div className="bg-white p-8 rounded shadow max-w-4xl mx-auto">
       <h2 className="text-2xl font-semibold mb-6">
-        {initialData ? "Edit Tuition" : "Add Tuition"}
+        {isEditMode ? "Edit Tuition" : "Add Tuition"}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Program */}
+
+        {/* ------------------------------------------------------
+            PROGRAM FIELD
+        ------------------------------------------------------ */}
         <div>
           <label className="font-medium block mb-1">Program</label>
-          <select
-            className="w-full border rounded p-2"
-            value={programId}
-            onChange={(e) => setProgramId(e.target.value)}
-            required
-            disabled={Boolean(initialData)} // não troca prog no edit
-          >
-            <option value="">Select a program...</option>
-            {programs.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title} {p.short_title ? `(${p.short_title})` : ""}
-              </option>
-            ))}
-          </select>
+
+          {isEditMode ? (
+            // Read-only field in Edit Mode
+            <input
+              disabled
+              value={selectedProgram?.displayName || ""}
+              className="w-full border rounded p-2 bg-gray-100 text-gray-600"
+            />
+          ) : (
+            // Premium Combobox in Add Mode
+            <Combobox
+              value={selectedProgram}
+              onChange={setSelectedProgram}
+            >
+              <div className="relative mt-1">
+                <div className="relative w-full cursor-default overflow-hidden rounded border bg-white text-left">
+                  <Combobox.Input
+                    className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 focus:ring-0"
+                    placeholder="Search program..."
+                    displayValue={(p) =>
+                      p ? p.displayName : ""
+                    }
+                    onChange={(e) => setQueryText(e.target.value)}
+                  />
+
+                  <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+                    <ChevronUpDownIcon className="h-5 w-5 text-gray-400" />
+                  </Combobox.Button>
+                </div>
+
+                <Transition
+                  as={Fragment}
+                  leave="transition ease-in duration-100"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    {filteredPrograms.length === 0 ? (
+                      <div className="cursor-default select-none px-4 py-2 text-gray-500">
+                        No program found.
+                      </div>
+                    ) : (
+                      filteredPrograms.map((p) => (
+                        <Combobox.Option
+                          key={p.id}
+                          value={p}
+                          className={({ active }) =>
+                            `cursor-pointer select-none py-2 pl-8 pr-4 ${
+                              active
+                                ? "bg-blue-600 text-white"
+                                : "text-gray-900"
+                            }`
+                          }
+                        >
+                          {({ selected }) => (
+                            <>
+                              <span
+                                className={`block truncate ${
+                                  selected
+                                    ? "font-medium"
+                                    : "font-normal"
+                                }`}
+                              >
+                                {p.displayName}
+                              </span>
+                              {selected && (
+                                <span className="absolute inset-y-0 left-2 flex items-center text-blue-600">
+                                  <CheckIcon className="h-5 w-5" />
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </Combobox.Option>
+                      ))
+                    )}
+                  </Combobox.Options>
+                </Transition>
+              </div>
+            </Combobox>
+          )}
 
           {selectedProgram && (
-            <p className="mt-1 text-sm text-gray-500">
-              Terms defined in Program Structure:{" "}
-              <strong>{terms.length}</strong>
+            <p className="text-sm text-gray-500 mt-1">
+              Terms found:{" "}
+              <strong>{selectedProgram.program_length}</strong>
             </p>
           )}
         </div>
 
-        {loadingStructure && <p>Loading program structure...</p>}
+        {/* ------------------------------------------------------
+            TABS FOR DOMESTIC / INTERNATIONAL
+        ------------------------------------------------------ */}
+        <div className="flex space-x-6 border-b pb-1">
+          <button
+            type="button"
+            className={`pb-2 ${
+              activeTab === "domestic"
+                ? "border-b-2 border-blue-600 font-semibold"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("domestic")}
+          >
+            Domestic Students
+          </button>
 
-        {/* Tabs: Domestic / International */}
-        {terms.length > 0 && !loadingStructure && (
-          <>
-            <div className="flex border-b mt-4">
-              <button
-                type="button"
-                onClick={() => setActiveTab("domestic")}
-                className={`px-4 py-2 text-sm font-medium ${
-                  activeTab === "domestic"
-                    ? "border-b-2 border-blue-600 text-blue-600"
-                    : "text-gray-500"
-                }`}
-              >
-                Domestic Students
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("international")}
-                className={`px-4 py-2 text-sm font-medium ${
-                  activeTab === "international"
-                    ? "border-b-2 border-blue-600 text-blue-600"
-                    : "text-gray-500"
-                }`}
-              >
-                International Students
-              </button>
-            </div>
+          <button
+            type="button"
+            className={`pb-2 ${
+              activeTab === "international"
+                ? "border-b-2 border-blue-600 font-semibold"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("international")}
+          >
+            International Students
+          </button>
+        </div>
 
-            {activeTab === "domestic"
-              ? renderTable(domestic, "domestic")
-              : renderTable(international, "international")}
-          </>
+        {/* ------------------------------------------------------
+            DOMESTIC TERMS TABLE
+        ------------------------------------------------------ */}
+        {activeTab === "domestic" && (
+          <div>
+            <table className="w-full text-sm mb-6">
+              <thead>
+                <tr className="bg-gray-100 text-left">
+                  <th className="p-2">Term</th>
+                  <th className="p-2">Tuition fees</th>
+                  <th className="p-2">Additional fees</th>
+                  <th className="p-2">Total fees*</th>
+                </tr>
+              </thead>
+              <tbody>
+                {domesticTerms.map((t, index) => (
+                  <tr key={index} className="border-b">
+                    <td className="p-2">{t.term_name}</td>
+
+                    <td className="p-2">
+                      <input
+                        className="w-full border rounded p-1"
+                        value={t.tuition_fee}
+                        onChange={(e) =>
+                          handleTermChange(
+                            index,
+                            "tuition_fee",
+                            e.target.value,
+                            true
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td className="p-2">
+                      <input
+                        className="w-full border rounded p-1"
+                        value={t.additional_fees}
+                        onChange={(e) =>
+                          handleTermChange(
+                            index,
+                            "additional_fees",
+                            e.target.value,
+                            true
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td className="p-2 font-medium">
+                      $
+                      {calcTotal(
+                        t.tuition_fee,
+                        t.additional_fees
+                      ).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <p className="text-right font-semibold">
+              Estimated total tuition:{" "}
+              <span className="text-blue-600">
+                $
+                {calcEstimatedTotal(domesticTerms).toLocaleString()}
+              </span>
+            </p>
+          </div>
         )}
 
+        {/* ------------------------------------------------------
+            INTERNATIONAL TERMS TABLE
+        ------------------------------------------------------ */}
+        {activeTab === "international" && (
+          <div>
+            <table className="w-full text-sm mb-6">
+              <thead>
+                <tr className="bg-gray-100 text-left">
+                  <th className="p-2">Term</th>
+                  <th className="p-2">Tuition fees</th>
+                  <th className="p-2">Additional fees</th>
+                  <th className="p-2">Total fees*</th>
+                </tr>
+              </thead>
+              <tbody>
+                {internationalTerms.map((t, index) => (
+                  <tr key={index} className="border-b">
+                    <td className="p-2">{t.term_name}</td>
+
+                    <td className="p-2">
+                      <input
+                        className="w-full border rounded p-1"
+                        value={t.tuition_fee}
+                        onChange={(e) =>
+                          handleTermChange(
+                            index,
+                            "tuition_fee",
+                            e.target.value,
+                            false
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td className="p-2">
+                      <input
+                        className="w-full border rounded p-1"
+                        value={t.additional_fees}
+                        onChange={(e) =>
+                          handleTermChange(
+                            index,
+                            "additional_fees",
+                            e.target.value,
+                            false
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td className="p-2 font-medium">
+                      $
+                      {calcTotal(
+                        t.tuition_fee,
+                        t.additional_fees
+                      ).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <p className="text-right font-semibold">
+              Estimated total tuition:{" "}
+              <span className="text-blue-600">
+                $
+                {calcEstimatedTotal(
+                  internationalTerms
+                ).toLocaleString()}
+              </span>
+            </p>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------
+            SUBMIT BUTTON
+        ------------------------------------------------------ */}
         <button
           type="submit"
-          className="mt-6 w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700"
+          className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700"
         >
-          {initialData ? "Save Changes" : "Create Tuition"}
+          {isEditMode ? "Save Changes" : "Create Tuition"}
         </button>
       </form>
     </div>

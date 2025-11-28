@@ -1,10 +1,17 @@
+// ------------------------------------------------------
+// EditRequirement.jsx
+// Loads requirement by ID, loads programs with displayName,
+// passes everything to RequirementsForm in Edit mode.
+// Program field is locked (read-only) inside the form.
+// ------------------------------------------------------
+
 import React, { useEffect, useState } from "react";
-import RequirementsForm from "./RequirementsForm";
-import { updateRequirement } from "../../../api/requirements";
-import { buildApiUrl } from "../../../api";
+import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";
-import { useParams, useNavigate } from "react-router-dom";
+import RequirementsForm from "./RequirementsForm";
+import { buildApiUrl } from "../../../api";
+import { updateRequirement } from "../../../api/requirements";
 
 const EditRequirement = () => {
   const { id } = useParams();
@@ -14,40 +21,72 @@ const EditRequirement = () => {
   const [initialData, setInitialData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ------------------------------------------------------
+  // Load Programs
+  // ------------------------------------------------------
   useEffect(() => {
-    const loadPage = async () => {
-      // Load program list
-      const snap = await getDocs(collection(db, "programs"));
-      const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setPrograms(items);
+    const loadAll = async () => {
+      try {
+        // Load programs from Firestore
+        const snap = await getDocs(collection(db, "programs"));
+        const list = snap.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            displayName: `${data.title}${
+              data.credential ? ` (${data.credential})` : ""
+            }`,
+          };
+        });
 
-      // Load requirement data
-      const url = buildApiUrl("getRequirementById") + `?id=${id}`;
-      const res = await fetch(url);
-      const data = await res.json();
+        // Sort A → Z
+        list.sort((a, b) => a.displayName.localeCompare(b.displayName));
+        setPrograms(list);
 
-      if (data.success) {
-        setInitialData(data.item);
+        // ------------------------------------------------------
+        // Load Requirement by API
+        // ------------------------------------------------------
+        const url = buildApiUrl("getRequirementById") + `?id=${id}`;
+        const res = await fetch(url);
+        const dataResult = await res.json();
+
+        if (dataResult.success && dataResult.item) {
+          const item = dataResult.item;
+
+          setInitialData({
+            program_id: item.program_id || "",
+            laptop: item.laptop || "",
+            software_tools: Array.isArray(item.software_tools)
+              ? item.software_tools
+              : [],
+          });
+        }
+      } catch (error) {
+        console.error("Error loading requirement:", error);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
-    loadPage();
+    loadAll();
   }, [id]);
 
+  // ------------------------------------------------------
+  // Submit Handler
+  // ------------------------------------------------------
   const handleSubmit = async (formData) => {
-    const result = await updateRequirement(id, formData);
+    const res = await updateRequirement(id, formData);
 
-    if (result.success) {
+    if (res.success) {
       navigate("/dashboardadmin/requirements");
     } else {
-      alert(result.message);
+      alert(res.message || "Failed to update requirement");
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (!initialData) return <p>Not found.</p>;
+  if (loading) return <p>Loading requirement...</p>;
+  if (!initialData) return <p>Requirement not found.</p>;
 
   return (
     <RequirementsForm

@@ -1,3 +1,8 @@
+// ------------------------------------------------------
+// EditAdmission.jsx
+// Loads admission data for editing and passes requirements as array.
+// ------------------------------------------------------
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdmissionsForm from "./AdmissionsForm";
@@ -10,77 +15,78 @@ const EditAdmission = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [initialData, setInitialData] = useState(null);
   const [programs, setPrograms] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [initialData, setInitialData] = useState(null);
 
+  // Load all programs
   useEffect(() => {
-    async function loadData() {
-      try {
-        // 1) Load all programs
-        const progSnap = await getDocs(collection(db, "programs"));
-        const progList = progSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        setPrograms(progList);
+    const loadPrograms = async () => {
+      const snap = await getDocs(collection(db, "programs"));
+      const mapped = snap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          ...data,
+          displayName: `${data.title}${
+            data.credential ? ` (${data.credential})` : ""
+          }`,
+        };
+      });
 
-        // 2) Load admission by ID
-        const url = buildApiUrl("getAdmissionById") + `?id=${id}`;
-        const res = await fetch(url);
-        const data = await res.json();
+      mapped.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-        if (data.success && data.item) {
-          const item = data.item;
+      setPrograms(mapped);
+    };
 
-          setInitialData({
-            program_id: item.program_id || "",
-            title: item.title || "",
-            requirements: Array.isArray(item.requirements)
-              ? item.requirements.join("\n")
-              : item.requirements || "",
-            transferability: item.transferability || "",
-            language_proficiency: item.language_proficiency || "",
-            academic_upgrading: item.academic_upgrading || "",
-          });
-        }
-      } finally {
-        setLoading(false);
+    loadPrograms();
+  }, []);
+
+  // Load admission data
+  useEffect(() => {
+    const loadData = async () => {
+      const url = buildApiUrl("getAdmissionById") + `?id=${id}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.success && data.item) {
+        const item = data.item;
+
+        // Requirements MUST be array here
+        const arr = Array.isArray(item.requirements)
+          ? item.requirements
+          : [];
+
+        setInitialData({
+          program_id: item.program_id || "",
+          title: item.title || "",
+          requirements: arr,
+          transferability: item.transferability || "",
+          language_proficiency: item.language_proficiency || "",
+          academic_upgrading: item.academic_upgrading || "",
+        });
       }
-    }
+    };
 
     loadData();
   }, [id]);
 
-  // 3) Submit update
-  const handleSubmit = async (formData) => {
-    const payload = {
-      ...formData,
-      program_id: initialData.program_id, // locked
-    };
+  const handleSubmit = async (payload) => {
+    const res = await updateAdmission(id, payload);
 
-    const result = await updateAdmission(id, payload);
-
-    if (result.success) {
+    if (res.success) {
       navigate("/dashboardadmin/admissions");
     } else {
-      alert(result.message || "Update failed");
+      alert(res.message || "Failed to update admission");
     }
   };
 
-  // 4) Loading states
-  if (loading) return <p>Loading...</p>;
-  if (!initialData) return <p>Admission not found.</p>;
-
-  // 5) Get program name (supports title or name)
-  const programObj = programs.find((p) => p.id === initialData.program_id);
-  const programName =
-    programObj?.title || programObj?.name || "Unknown Program";
+  if (!initialData) return <p>Loading admission...</p>;
 
   return (
     <AdmissionsForm
       programs={programs}
       initialData={initialData}
       onSubmit={handleSubmit}
-      lockProgram={true}
-      lockedProgramName={programName}
     />
   );
 };

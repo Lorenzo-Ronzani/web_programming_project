@@ -1,5 +1,8 @@
 // ------------------------------------------------------
-// TuitionList.jsx - Searchable tuition list + clean UI
+// TuitionList.jsx - Premium version with:
+// - Program Name (Credential)
+// - Sorting (clickable headers)
+// - Smart search
 // ------------------------------------------------------
 import React, { useEffect, useState } from "react";
 import { db } from "../../../firebase";
@@ -14,6 +17,13 @@ const TuitionList = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState({
+    key: "program",
+    direction: "asc",
+  });
+
+  // Load tuition records
   const loadTuition = async () => {
     const snap = await getDocs(collection(db, "tuition"));
     const results = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -21,22 +31,23 @@ const TuitionList = () => {
     setFiltered(results);
   };
 
+  // Load Program Name + Credential
   const loadPrograms = async () => {
     const snap = await getDocs(collection(db, "programs"));
     const map = {};
 
     snap.docs.forEach((doc) => {
       const d = doc.data();
-      map[doc.id] = d.title || "(Untitled Program)";
+      map[doc.id] = `${d.title}${d.credential ? ` (${d.credential})` : ""}`;
     });
 
     setProgramsMap(map);
   };
 
   useEffect(() => {
-    Promise.all([loadTuition(), loadPrograms()]).then(() => {
-      setLoading(false);
-    });
+    Promise.all([loadTuition(), loadPrograms()]).then(() =>
+      setLoading(false)
+    );
   }, []);
 
   // SEARCH FILTER
@@ -45,8 +56,8 @@ const TuitionList = () => {
 
     const results = items.filter((item) => {
       const program = (programsMap[item.program_id] || "").toLowerCase();
-      const domestic = (item.domestic?.estimated_total || "").toString();
-      const intl = (item.international?.estimated_total || "").toString();
+      const domestic = String(item.domestic?.estimated_total || "");
+      const intl = String(item.international?.estimated_total || "");
 
       return (
         program.includes(text) ||
@@ -58,12 +69,52 @@ const TuitionList = () => {
     setFiltered(results);
   }, [search, items, programsMap]);
 
+  // Sorting Handler
+  const sortData = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+
+    setSortConfig({ key, direction });
+
+    const sorted = [...filtered].sort((a, b) => {
+      let aVal = "";
+      let bVal = "";
+
+      if (key === "program") {
+        aVal = programsMap[a.program_id] || "";
+        bVal = programsMap[b.program_id] || "";
+      }
+
+      if (key === "domestic") {
+        aVal = Number(a.domestic?.estimated_total || 0);
+        bVal = Number(b.domestic?.estimated_total || 0);
+      }
+
+      if (key === "international") {
+        aVal = Number(a.international?.estimated_total || 0);
+        bVal = Number(b.international?.estimated_total || 0);
+      }
+
+      if (aVal < bVal) return direction === "asc" ? -1 : 1;
+      if (aVal > bVal) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setFiltered(sorted);
+  };
+
+  const sortArrow = (key) => {
+    if (sortConfig.key !== key) return "↕";
+    return sortConfig.direction === "asc" ? "↑" : "↓";
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this tuition record?")) return;
 
     const res = await deleteTuition(id);
     if (res.success) loadTuition();
-    else alert(res.message || "Failed to delete tuition");
   };
 
   if (loading) return <p>Loading tuition...</p>;
@@ -75,10 +126,9 @@ const TuitionList = () => {
         <h1 className="text-2xl font-semibold">Tuition & Fees</h1>
 
         <div className="flex gap-3">
-          {/* SEARCH */}
           <input
             type="text"
-            placeholder="Search program or amount..."
+            placeholder="Search program, totals, credential..."
             className="border rounded px-3 py-2 w-64"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -100,9 +150,27 @@ const TuitionList = () => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b text-gray-600">
-              <th className="py-3 px-2">Program</th>
-              <th className="py-3 px-2">Domestic Total</th>
-              <th className="py-3 px-2">International Total</th>
+              <th
+                className="py-3 px-2 cursor-pointer select-none"
+                onClick={() => sortData("program")}
+              >
+                Program {sortArrow("program")}
+              </th>
+
+              <th
+                className="py-3 px-2 cursor-pointer select-none"
+                onClick={() => sortData("domestic")}
+              >
+                Domestic Total {sortArrow("domestic")}
+              </th>
+
+              <th
+                className="py-3 px-2 cursor-pointer select-none"
+                onClick={() => sortData("international")}
+              >
+                International Total {sortArrow("international")}
+              </th>
+
               <th className="py-3 px-2">Actions</th>
             </tr>
           </thead>
