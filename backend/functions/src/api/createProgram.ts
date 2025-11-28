@@ -31,6 +31,7 @@ export const createProgram = onRequest({ cors: true }, async (req: any, res: any
       icon: data.icon || "",
       duration: data.duration || "",
       description: data.description || "",
+      about: data.about || "",
       created_at: new Date(),
     };
 

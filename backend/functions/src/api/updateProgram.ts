@@ -35,6 +35,7 @@ export const updateProgram = onRequest({ cors: true }, async (req: any, res: any
       icon: data.icon || "",
       duration: data.duration || "",
       description: data.description || "",
+      about: data.about || "",
       updated_at: new Date(),
     };
 

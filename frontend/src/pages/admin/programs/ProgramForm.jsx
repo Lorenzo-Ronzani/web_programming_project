@@ -13,6 +13,7 @@ const ProgramForm = ({ initialData, onSubmit }) => {
     icon: "",
     duration: "",
     description: "",
+    about: "",            // NEW FIELD
   });
 
   // Load initial data when editing
@@ -30,6 +31,7 @@ const ProgramForm = ({ initialData, onSubmit }) => {
         icon: initialData.icon || "",
         duration: initialData.duration || "",
         description: initialData.description || "",
+        about: initialData.about || "",    // LOAD NEW FIELD
       });
     }
   }, [initialData]);
@@ -61,6 +63,7 @@ const ProgramForm = ({ initialData, onSubmit }) => {
       icon: form.icon,
       duration: form.duration,
       description: form.description,
+      about: form.about,    // SUBMIT NEW FIELD
     };
 
     onSubmit(payload);
@@ -69,6 +72,7 @@ const ProgramForm = ({ initialData, onSubmit }) => {
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow">
       <form onSubmit={handleSubmit} className="space-y-6">
+        
         {/* Title */}
         <div>
           <label className="block font-semibold mb-1">Title</label>
@@ -98,7 +102,7 @@ const ProgramForm = ({ initialData, onSubmit }) => {
           </select>
         </div>
 
-        {/* Program Length (only numbers are saved) */}
+        {/* Program Length */}
         <div>
           <label className="block font-semibold mb-1">Program Length</label>
           <input
@@ -148,15 +152,9 @@ const ProgramForm = ({ initialData, onSubmit }) => {
             <option value="">Select a School</option>
             <option value="School of Technology">School of Technology</option>
             <option value="School of Business">School of Business</option>
-            <option value="School of Health & Wellness">
-              School of Health & Wellness
-            </option>
-            <option value="School of Community Studies">
-              School of Community Studies
-            </option>
-            <option value="School of Creative Technologies">
-              School of Creative Technologies
-            </option>
+            <option value="School of Health & Wellness">School of Health & Wellness</option>
+            <option value="School of Community Studies">School of Community Studies</option>
+            <option value="School of Creative Technologies">School of Creative Technologies</option>
             <option value="School of Global Access">School of Global Access</option>
           </select>
         </div>
@@ -186,7 +184,7 @@ const ProgramForm = ({ initialData, onSubmit }) => {
         {/* Icon */}
         <div>
           <label className="block font-semibold mb-1">
-            Icon 
+            Icon{" "}
             <a
               href="https://fonts.google.com/icons?selected=Material+Symbols+Outlined"
               target="_blank"
@@ -232,7 +230,19 @@ const ProgramForm = ({ initialData, onSubmit }) => {
           />
         </div>
 
-        {/* Submit button */}
+        {/* About (NEW FIELD) */}
+        <div>
+          <label className="block font-semibold mb-1">About</label>
+          <textarea
+            name="about"
+            className="w-full border p-2 rounded h-32"
+            placeholder="A more detailed and marketing-oriented description of the program."
+            value={form.about}
+            onChange={handleChange}
+          />
+        </div>
+
+        {/* Submit */}
         <button
           type="submit"
           className="w-full bg-blue-600 text-white p-3 rounded font-semibold hover:bg-blue-700"
@@ -245,4 +255,3 @@ const ProgramForm = ({ initialData, onSubmit }) => {
 };
 
 export default ProgramForm;
-
