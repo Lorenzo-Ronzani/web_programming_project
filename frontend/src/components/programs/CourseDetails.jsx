@@ -239,9 +239,7 @@ const CourseDetails = () => {
         </div>
       </section>
 
-      {/* -------------------------------------------------------------
-              NEW SECTION — BEAUTIFUL INTAKES (BEFORE TUITION)
-      -------------------------------------------------------------- */}
+      {/* INTAKES */}
       <section className="max-w-6xl mx-auto px-6 md:px-10 py-12">
         <h2 className="text-3xl font-bold text-blue-900 mb-4">
           Available Intakes
