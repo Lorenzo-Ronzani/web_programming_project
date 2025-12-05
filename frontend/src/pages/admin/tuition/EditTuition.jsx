@@ -1,7 +1,6 @@
 // ------------------------------------------------------
 // EditTuition.jsx
-// Loads tuition data and formats domestic/international
-// so the TuitionForm always receives valid arrays.
+// Loads tuition record, normalizes data, and passes it to TuitionForm
 // ------------------------------------------------------
 
 import React, { useEffect, useState } from "react";
@@ -21,32 +20,23 @@ const EditTuition = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadAll = async () => {
+    const loadEverything = async () => {
       try {
-        // ------------------------------------------------------
-        // Load programs and create displayName
-        // ------------------------------------------------------
+        // Load program list
         const snap = await getDocs(collection(db, "programs"));
-
         const list = snap.docs.map((doc) => {
           const data = doc.data();
           return {
             id: doc.id,
             ...data,
-            displayName: `${data.title}${
-              data.credential ? ` (${data.credential})` : ""
-            }`,
+            displayName: `${data.title}${data.credential ? ` (${data.credential})` : ""}`,
           };
         });
 
-        // Sort programs alphabetically
         list.sort((a, b) => a.displayName.localeCompare(b.displayName));
-
         setPrograms(list);
 
-        // ------------------------------------------------------
-        // Load tuition record from backend
-        // ------------------------------------------------------
+        // Fetch tuition record
         const url = buildApiUrl("getTuitionById") + `?id=${id}`;
         const res = await fetch(url);
         const data = await res.json();
@@ -54,39 +44,21 @@ const EditTuition = () => {
         if (data.success && data.item) {
           const item = data.item;
 
-          // ------------------------------------------------------
-          // Normalize domestic terms
-          // domestic can be:
-          // - array
-          // - { estimated_total, terms: [...] }
-          // - undefined
-          // ------------------------------------------------------
-          const domesticTerms = Array.isArray(item.domestic)
-            ? item.domestic
-            : Array.isArray(item.domestic?.terms)
-            ? item.domestic.terms
-            : [];
+          // Build proper objects with totals + terms
+          const domesticObj = {
+            estimated_total: item.domestic?.estimated_total || 0,
+            terms: item.domestic?.terms || [],
+          };
 
-          // ------------------------------------------------------
-          // Normalize international terms
-          // international can be:
-          // - array
-          // - { estimated_total, terms: [...] }
-          // - undefined
-          // ------------------------------------------------------
-          const internationalTerms = Array.isArray(item.international)
-            ? item.international
-            : Array.isArray(item.international?.terms)
-            ? item.international.terms
-            : [];
+          const internationalObj = {
+            estimated_total: item.international?.estimated_total || 0,
+            terms: item.international?.terms || [],
+          };
 
-          // ------------------------------------------------------
-          // Set final initial data for the form
-          // ------------------------------------------------------
           setInitialData({
             program_id: item.program_id || "",
-            domestic: domesticTerms,
-            international: internationalTerms,
+            domestic: domesticObj,
+            international: internationalObj,
           });
         }
       } catch (err) {
@@ -96,19 +68,16 @@ const EditTuition = () => {
       }
     };
 
-    loadAll();
+    loadEverything();
   }, [id]);
 
-  // ------------------------------------------------------
-  // Submit handler
-  // ------------------------------------------------------
   const handleSubmit = async (formData) => {
     const res = await updateTuition(id, formData);
 
     if (res.success) {
       navigate("/dashboardadmin/tuition");
     } else {
-      alert(res.message || "Failed to update tuition");
+      alert(res.message || "Failed to update tuition.");
     }
   };
 

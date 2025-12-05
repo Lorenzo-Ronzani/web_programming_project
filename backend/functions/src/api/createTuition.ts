@@ -1,5 +1,5 @@
 // ------------------------------------------------------
-// createTuition.ts - Create tuition entry
+// createTuition.ts - Create tuition entry 
 // ------------------------------------------------------
 import { onRequest } from "firebase-functions/v2/https";
 import { db } from "../config/firebase";
@@ -12,7 +12,12 @@ export const createTuition = onRequest({ cors: true }, async (req: any, res: any
   try {
     const data = req.body;
 
-    // VALIDATION: Only one tuition per program
+    // Enforce required fields
+    if (!data.program_id) {
+      return res.status(400).json({ success: false, message: "program_id is required" });
+    }
+
+    // Only one tuition per program
     const existing = await db
       .collection("tuition")
       .where("program_id", "==", data.program_id)
@@ -26,11 +31,24 @@ export const createTuition = onRequest({ cors: true }, async (req: any, res: any
       });
     }
 
+    // Normalize and enforce structure
+    const formatted = {
+      program_id: data.program_id,
 
-    const ref = await db.collection("tuition").add({
-      ...data,
+      domestic: {
+        estimated_total: Number(data.domestic?.estimated_total || 0),
+        terms: Array.isArray(data.domestic?.terms) ? data.domestic.terms : [],
+      },
+
+      international: {
+        estimated_total: Number(data.international?.estimated_total || 0),
+        terms: Array.isArray(data.international?.terms) ? data.international.terms : [],
+      },
+
       created_at: new Date(),
-    });
+    };
+
+    const ref = await db.collection("tuition").add(formatted);
 
     return res.status(200).json({
       success: true,

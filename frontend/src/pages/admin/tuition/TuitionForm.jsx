@@ -1,22 +1,12 @@
 // ------------------------------------------------------
 // TuitionForm.jsx
-// Handles Add + Edit tuition data.
-// In Add mode: program is searchable Combobox.
-// In Edit mode: program is shown in read-only format.
-// Tuition is divided into Domestic and International tables.
+// Add + Edit tuition form
+// Handles program selection, terms editing, and total calculation
 // ------------------------------------------------------
 
-import React, {
-  Fragment,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { Combobox, Transition } from "@headlessui/react";
-import {
-  CheckIcon,
-  ChevronUpDownIcon,
-} from "@heroicons/react/20/solid";
+import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
 const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
   const [selectedProgram, setSelectedProgram] = useState(null);
@@ -24,43 +14,60 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
 
   const [domesticTerms, setDomesticTerms] = useState([]);
   const [internationalTerms, setInternationalTerms] = useState([]);
+
   const [activeTab, setActiveTab] = useState("domestic");
   const isEditMode = Boolean(initialData);
 
   // ------------------------------------------------------
-  // Load initial data from Edit Mode
+// Load initial data from Edit Mode
+// ------------------------------------------------------
+useEffect(() => {
+  if (!initialData || programs.length === 0) return;
+
+  const programFound = programs.find(
+    (p) => p.id === initialData.program_id
+  );
+  setSelectedProgram(programFound || null);
+
+  setDomesticTerms(initialData.domestic?.terms || []);
+  setInternationalTerms(initialData.international?.terms || []);
+}, [initialData, programs]);
+
+
+// ------------------------------------------------------
+// Auto-generate terms in ADD MODE based on program_length
+// ------------------------------------------------------
+useEffect(() => {
+  if (isEditMode) return;          // Do not auto-load in Edit mode
+  if (!selectedProgram) return;    // Run only after selecting a program
+
+  const length = Number(selectedProgram.program_length || 0);
+  if (length === 0) return;
+
+  // Build dynamic terms
+  const generated = Array.from({ length }, (_, i) => ({
+    term_name: `Term ${i + 1}`,
+    tuition_fee: "",
+    additional_fees: "",
+  }));
+
+  setDomesticTerms(generated);
+  setInternationalTerms(generated);
+}, [selectedProgram, isEditMode]);
+
+
   // ------------------------------------------------------
-  useEffect(() => {
-    if (!initialData || programs.length === 0) return;
-
-    // Pre-select program
-    const programFound = programs.find(
-      (p) => p.id === initialData.program_id
-    );
-    setSelectedProgram(programFound || null);
-
-    // Setup terms
-    setDomesticTerms(initialData.domestic || []);
-    setInternationalTerms(initialData.international || []);
-  }, [initialData, programs]);
-
-  // ------------------------------------------------------
-  // Generate Display Names for Programs
+  // Display name generator
   // ------------------------------------------------------
   const formattedPrograms = useMemo(() => {
     return programs
       .map((p) => ({
         ...p,
-        displayName: `${p.title}${
-          p.credential ? ` (${p.credential})` : ""
-        }`,
+        displayName: `${p.title}${p.credential ? ` (${p.credential})` : ""}`,
       }))
       .sort((a, b) => a.displayName.localeCompare(b.displayName));
   }, [programs]);
 
-  // ------------------------------------------------------
-  // Combobox Search Filter
-  // ------------------------------------------------------
   const filteredPrograms = useMemo(() => {
     if (!queryText) return formattedPrograms;
     return formattedPrograms.filter((p) =>
@@ -69,41 +76,36 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
   }, [queryText, formattedPrograms]);
 
   // ------------------------------------------------------
-  // Handle Changes in Tuition Fields
+  // Term updates
   // ------------------------------------------------------
   const handleTermChange = (index, field, value, isDomestic = true) => {
     if (isDomestic) {
       setDomesticTerms((prev) =>
-        prev.map((t, i) =>
-          i === index ? { ...t, [field]: value } : t
-        )
+        prev.map((t, i) => (i === index ? { ...t, [field]: value } : t))
       );
     } else {
       setInternationalTerms((prev) =>
-        prev.map((t, i) =>
-          i === index ? { ...t, [field]: value } : t
-        )
+        prev.map((t, i) => (i === index ? { ...t, [field]: value } : t))
       );
     }
   };
 
   // ------------------------------------------------------
-  // Fee Calculations
+  // Fee calculations
   // ------------------------------------------------------
   const calcTotal = (fee, add) => {
-    const f = parseFloat(fee || 0);
-    const a = parseFloat(add || 0);
-    return f + a;
+    return Number(fee || 0) + Number(add || 0);
   };
 
-  const calcEstimatedTotal = (list) =>
-    list.reduce(
+  const calcEstimatedTotal = (terms) => {
+    return terms.reduce(
       (sum, t) => sum + calcTotal(t.tuition_fee, t.additional_fees),
       0
     );
+  };
 
   // ------------------------------------------------------
-  // Submit Handler
+  // Submit Handler (the fix)
   // ------------------------------------------------------
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -116,13 +118,24 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
 
     const payload = {
       program_id: programId,
-      domestic: domesticTerms,
-      international: internationalTerms,
+
+      domestic: {
+        estimated_total: calcEstimatedTotal(domesticTerms),
+        terms: domesticTerms,
+      },
+
+      international: {
+        estimated_total: calcEstimatedTotal(internationalTerms),
+        terms: internationalTerms,
+      },
     };
 
     onSubmit(payload);
   };
 
+  // ------------------------------------------------------
+  // UI
+  // ------------------------------------------------------
   return (
     <div className="bg-white p-8 rounded shadow max-w-4xl mx-auto">
       <h2 className="text-2xl font-semibold mb-6">
@@ -130,34 +143,24 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-
-        {/* ------------------------------------------------------
-            PROGRAM FIELD
-        ------------------------------------------------------ */}
+        {/* PROGRAM FIELD */}
         <div>
           <label className="font-medium block mb-1">Program</label>
 
           {isEditMode ? (
-            // Read-only field in Edit Mode
             <input
               disabled
               value={selectedProgram?.displayName || ""}
               className="w-full border rounded p-2 bg-gray-100 text-gray-600"
             />
           ) : (
-            // Premium Combobox in Add Mode
-            <Combobox
-              value={selectedProgram}
-              onChange={setSelectedProgram}
-            >
+            <Combobox value={selectedProgram} onChange={setSelectedProgram}>
               <div className="relative mt-1">
-                <div className="relative w-full cursor-default overflow-hidden rounded border bg-white text-left">
+                <div className="relative w-full overflow-hidden rounded border bg-white">
                   <Combobox.Input
                     className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 focus:ring-0"
                     placeholder="Search program..."
-                    displayValue={(p) =>
-                      p ? p.displayName : ""
-                    }
+                    displayValue={(p) => (p ? p.displayName : "")}
                     onChange={(e) => setQueryText(e.target.value)}
                   />
 
@@ -172,7 +175,7 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
-                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded bg-white shadow-lg">
                     {filteredPrograms.length === 0 ? (
                       <div className="cursor-default select-none px-4 py-2 text-gray-500">
                         No program found.
@@ -184,9 +187,7 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
                           value={p}
                           className={({ active }) =>
                             `cursor-pointer select-none py-2 pl-8 pr-4 ${
-                              active
-                                ? "bg-blue-600 text-white"
-                                : "text-gray-900"
+                              active ? "bg-blue-600 text-white" : "text-gray-900"
                             }`
                           }
                         >
@@ -194,9 +195,7 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
                             <>
                               <span
                                 className={`block truncate ${
-                                  selected
-                                    ? "font-medium"
-                                    : "font-normal"
+                                  selected ? "font-medium" : "font-normal"
                                 }`}
                               >
                                 {p.displayName}
@@ -216,18 +215,9 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
               </div>
             </Combobox>
           )}
-
-          {selectedProgram && (
-            <p className="text-sm text-gray-500 mt-1">
-              Terms found:{" "}
-              <strong>{selectedProgram.program_length}</strong>
-            </p>
-          )}
         </div>
 
-        {/* ------------------------------------------------------
-            TABS FOR DOMESTIC / INTERNATIONAL
-        ------------------------------------------------------ */}
+        {/* TABS */}
         <div className="flex space-x-6 border-b pb-1">
           <button
             type="button"
@@ -254,9 +244,7 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
           </button>
         </div>
 
-        {/* ------------------------------------------------------
-            DOMESTIC TERMS TABLE
-        ------------------------------------------------------ */}
+        {/* DOMESTIC TERMS */}
         {activeTab === "domestic" && (
           <div>
             <table className="w-full text-sm mb-6">
@@ -265,7 +253,7 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
                   <th className="p-2">Term</th>
                   <th className="p-2">Tuition fees</th>
                   <th className="p-2">Additional fees</th>
-                  <th className="p-2">Total fees*</th>
+                  <th className="p-2">Total fees</th>
                 </tr>
               </thead>
               <tbody>
@@ -278,12 +266,7 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
                         className="w-full border rounded p-1"
                         value={t.tuition_fee}
                         onChange={(e) =>
-                          handleTermChange(
-                            index,
-                            "tuition_fee",
-                            e.target.value,
-                            true
-                          )
+                          handleTermChange(index, "tuition_fee", e.target.value, true)
                         }
                       />
                     </td>
@@ -304,11 +287,7 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
                     </td>
 
                     <td className="p-2 font-medium">
-                      $
-                      {calcTotal(
-                        t.tuition_fee,
-                        t.additional_fees
-                      ).toLocaleString()}
+                      ${calcTotal(t.tuition_fee, t.additional_fees).toLocaleString()}
                     </td>
                   </tr>
                 ))}
@@ -318,16 +297,13 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
             <p className="text-right font-semibold">
               Estimated total tuition:{" "}
               <span className="text-blue-600">
-                $
-                {calcEstimatedTotal(domesticTerms).toLocaleString()}
+                ${calcEstimatedTotal(domesticTerms).toLocaleString()}
               </span>
             </p>
           </div>
         )}
 
-        {/* ------------------------------------------------------
-            INTERNATIONAL TERMS TABLE
-        ------------------------------------------------------ */}
+        {/* INTERNATIONAL TERMS */}
         {activeTab === "international" && (
           <div>
             <table className="w-full text-sm mb-6">
@@ -336,7 +312,7 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
                   <th className="p-2">Term</th>
                   <th className="p-2">Tuition fees</th>
                   <th className="p-2">Additional fees</th>
-                  <th className="p-2">Total fees*</th>
+                  <th className="p-2">Total fees</th>
                 </tr>
               </thead>
               <tbody>
@@ -349,12 +325,7 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
                         className="w-full border rounded p-1"
                         value={t.tuition_fee}
                         onChange={(e) =>
-                          handleTermChange(
-                            index,
-                            "tuition_fee",
-                            e.target.value,
-                            false
-                          )
+                          handleTermChange(index, "tuition_fee", e.target.value, false)
                         }
                       />
                     </td>
@@ -375,11 +346,7 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
                     </td>
 
                     <td className="p-2 font-medium">
-                      $
-                      {calcTotal(
-                        t.tuition_fee,
-                        t.additional_fees
-                      ).toLocaleString()}
+                      ${calcTotal(t.tuition_fee, t.additional_fees).toLocaleString()}
                     </td>
                   </tr>
                 ))}
@@ -389,18 +356,13 @@ const TuitionForm = ({ programs, initialData = null, onSubmit }) => {
             <p className="text-right font-semibold">
               Estimated total tuition:{" "}
               <span className="text-blue-600">
-                $
-                {calcEstimatedTotal(
-                  internationalTerms
-                ).toLocaleString()}
+                ${calcEstimatedTotal(internationalTerms).toLocaleString()}
               </span>
             </p>
           </div>
         )}
 
-        {/* ------------------------------------------------------
-            SUBMIT BUTTON
-        ------------------------------------------------------ */}
+        {/* SUBMIT BUTTON */}
         <button
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700"
