@@ -1,36 +1,79 @@
 // ------------------------------------------------------
 // ProgramStructureForm.jsx
-// Premium version with searchable Combobox for ADD mode,
-// and disabled program field for EDIT mode.
+// Form to create or edit a program structure using
+// real course references (course_id, code, title).
+// - In ADD mode: program selectable via combobox.
+// - In EDIT mode: program is read-only.
+// - Terms are generated dynamically based on
+//   program_length in ADD mode.
+// - Each term uses a tag-style multi-select of courses.
 // ------------------------------------------------------
 
-import React, { Fragment, useEffect, useMemo, useState } from "react";
-import { Combobox, Transition } from "@headlessui/react";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import React, { useEffect, useMemo, useState } from "react";
+import { Combobox } from "@headlessui/react";
 
-const ProgramStructureForm = ({ programs, initialData = null, onSubmit }) => {
+const ProgramStructureForm = ({
+  programs,
+  courses,
+  initialData = null,
+  onSubmit,
+}) => {
   const [selectedProgram, setSelectedProgram] = useState(null);
-  const [query, setQuery] = useState("");
+  const [programQuery, setProgramQuery] = useState("");
   const [terms, setTerms] = useState([]);
 
   const isEditMode = Boolean(initialData);
 
-  // Load initial structure data when editing
+  // Helper to build terms from existing data (Edit mode)
+  const buildTermsFromInitialData = (data, courseList) => {
+    if (!data || !Array.isArray(data.terms)) return [];
+
+    return data.terms.map((t, index) => {
+      const termName = t.term_name || t.term || `Term ${index + 1}`;
+
+      let selectedCourseIds = [];
+
+      // Support both legacy string array and new object array
+      if (Array.isArray(t.courses) && t.courses.length > 0) {
+        const firstItem = t.courses[0];
+
+        if (typeof firstItem === "string") {
+          // Legacy format: "CODE-Title"
+          selectedCourseIds = t.courses
+            .map((str) => {
+              const code = str.split("-")[0].trim();
+              const found = courseList.find((c) => c.code === code);
+              return found ? found.id : null;
+            })
+            .filter(Boolean);
+        } else if (typeof firstItem === "object") {
+          // New format with course_id
+          selectedCourseIds = t.courses
+            .map((obj) => obj.course_id)
+            .filter(Boolean);
+        }
+      }
+
+      return {
+        term_name: termName,
+        selectedCourseIds,
+        search: "",
+      };
+    });
+  };
+
+  // Load initial data in Edit mode
   useEffect(() => {
     if (!initialData) return;
 
     const program = programs.find((p) => p.id === initialData.program_id);
     setSelectedProgram(program || null);
 
-    const mappedTerms = initialData.terms?.map((t) => ({
-      term_name: t.term_name || t.term || "",
-      courses_text: Array.isArray(t.courses) ? t.courses.join("\n") : "",
-    })) || [];
-
+    const mappedTerms = buildTermsFromInitialData(initialData, courses);
     setTerms(mappedTerms);
-  }, [initialData, programs]);
+  }, [initialData, programs, courses]);
 
-  // Build and sort program list with displayName
+  // Build formatted program list with displayName
   const formattedPrograms = useMemo(() => {
     return programs
       .map((p) => ({
@@ -42,16 +85,15 @@ const ProgramStructureForm = ({ programs, initialData = null, onSubmit }) => {
       .sort((a, b) => a.displayName.localeCompare(b.displayName));
   }, [programs]);
 
-  // Filter programs based on user search
+  // Filter programs by combobox search query
   const filteredPrograms = useMemo(() => {
-    if (!query) return formattedPrograms;
-
+    if (!programQuery) return formattedPrograms;
     return formattedPrograms.filter((p) =>
-      p.displayName.toLowerCase().includes(query.toLowerCase())
+      p.displayName.toLowerCase().includes(programQuery.toLowerCase())
     );
-  }, [query, formattedPrograms]);
+  }, [programQuery, formattedPrograms]);
 
-  // Generate empty terms automatically in ADD mode
+  // Generate terms automatically in ADD mode based on program_length
   useEffect(() => {
     if (isEditMode) return;
     if (!selectedProgram) return;
@@ -59,18 +101,52 @@ const ProgramStructureForm = ({ programs, initialData = null, onSubmit }) => {
     const count = selectedProgram.program_length || 0;
     const autoTerms = Array.from({ length: count }, (_, i) => ({
       term_name: `Term ${i + 1}`,
-      courses_text: "",
+      selectedCourseIds: [],
+      search: "",
     }));
 
     setTerms(autoTerms);
   }, [selectedProgram, isEditMode]);
 
-  const handleTermChange = (index, field, value) => {
+  // Update a field in a specific term
+  const handleTermFieldChange = (index, field, value) => {
     setTerms((prev) =>
       prev.map((t, i) => (i === index ? { ...t, [field]: value } : t))
     );
   };
 
+  // Add a course to a term
+  const handleAddCourseToTerm = (termIndex, courseId) => {
+    setTerms((prev) =>
+      prev.map((t, i) => {
+        if (i !== termIndex) return t;
+        if (t.selectedCourseIds.includes(courseId)) return t;
+
+        return {
+          ...t,
+          selectedCourseIds: [...t.selectedCourseIds, courseId],
+        };
+      })
+    );
+  };
+
+  // Remove a course from a term
+  const handleRemoveCourseFromTerm = (termIndex, courseId) => {
+    setTerms((prev) =>
+      prev.map((t, i) =>
+        i === termIndex
+          ? {
+              ...t,
+              selectedCourseIds: t.selectedCourseIds.filter(
+                (id) => id !== courseId
+              ),
+            }
+          : t
+      )
+    );
+  };
+
+  // Build the payload and call parent onSubmit
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -81,136 +157,231 @@ const ProgramStructureForm = ({ programs, initialData = null, onSubmit }) => {
       return;
     }
 
+    // Convert term state to API payload
     const payload = {
       program_id: programId,
-      terms: terms.map((t) => ({
-        term_name: t.term_name,
-        courses: t.courses_text
-          .split("\n")
-          .map((c) => c.trim())
-          .filter(Boolean),
-      })),
+      terms: terms.map((t) => {
+        const selectedCourses = t.selectedCourseIds.map((courseId, index) => {
+          const course = courses.find((c) => c.id === courseId);
+          return {
+            course_id: courseId,
+            course_code: course?.code || "",
+            course_title: course?.title || "",
+            order: index + 1,
+          };
+        });
+
+        return {
+          term_name: t.term_name,
+          courses: selectedCourses,
+        };
+      }),
     };
 
     onSubmit(payload);
   };
 
+  // Helper to get course info by id
+  const getCourseById = (id) => courses.find((c) => c.id === id);
+
   return (
-    <div className="max-w-3xl bg-white shadow p-8 rounded">
+    <div className="max-w-4xl bg-white shadow p-8 rounded">
       <h2 className="text-xl font-semibold mb-6">
         {isEditMode ? "Edit Program Structure" : "Add Program Structure"}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-
-        {/* Program field */}
+        {/* Program selection */}
         <div>
           <label className="font-medium block mb-1">Program</label>
 
           {isEditMode ? (
-            // Read-only when editing
+            // Read-only in edit mode
             <input
               disabled
               className="w-full border p-2 rounded bg-gray-100 text-gray-600"
               value={selectedProgram?.displayName || ""}
             />
           ) : (
-            // Combobox premium when adding
+            // Combobox with search in add mode
             <Combobox value={selectedProgram} onChange={setSelectedProgram}>
               <div className="relative mt-1">
-                {/* Input field */}
                 <div className="relative w-full cursor-default overflow-hidden rounded border bg-white text-left">
                   <Combobox.Input
                     placeholder="Search for a program..."
                     className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 focus:ring-0"
                     displayValue={(p) => (p ? p.displayName : "")}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => setProgramQuery(e.target.value)}
                   />
-
-                  <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-                    <ChevronUpDownIcon className="h-5 w-5 text-gray-400" />
-                  </Combobox.Button>
                 </div>
 
-                {/* Dropdown list */}
-                <Transition
-                  as={Fragment}
-                  leave="transition ease-in duration-100"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <Combobox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    {filteredPrograms.length === 0 ? (
-                      <div className="cursor-default select-none px-4 py-2 text-gray-500">
-                        No program found.
-                      </div>
-                    ) : (
-                      filteredPrograms.map((p) => (
-                        <Combobox.Option
-                          key={p.id}
-                          value={p}
-                          className={({ active }) =>
-                            `relative cursor-pointer select-none py-2 pl-8 pr-4 ${
-                              active ? "bg-blue-600 text-white" : ""
-                            }`
-                          }
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                {p.displayName}
-                              </span>
-                              {selected && (
-                                <span className="absolute inset-y-0 left-2 flex items-center">
-                                  <CheckIcon className="h-5 w-5 text-blue-600" />
-                                </span>
-                              )}
-                            </>
-                          )}
-                        </Combobox.Option>
-                      ))
-                    )}
+                {filteredPrograms.length > 0 && (
+                  <Combobox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-sm">
+                    {filteredPrograms.map((p) => (
+                      <Combobox.Option
+                        key={p.id}
+                        value={p}
+                        className={({ active }) =>
+                          `cursor-pointer select-none py-2 pl-3 pr-3 ${
+                            active ? "bg-blue-600 text-white" : "text-gray-900"
+                          }`
+                        }
+                      >
+                        {p.displayName}
+                      </Combobox.Option>
+                    ))}
                   </Combobox.Options>
-                </Transition>
+                )}
+
+                {filteredPrograms.length === 0 && programQuery && (
+                  <div className="absolute z-20 mt-1 w-full rounded bg-white shadow-lg ring-1 ring-black ring-opacity-5 px-3 py-2 text-sm text-gray-500">
+                    No program found.
+                  </div>
+                )}
               </div>
             </Combobox>
           )}
         </div>
 
-        {/* Terms */}
+        {/* Terms and course selection */}
         {terms.length > 0 && (
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Terms & Courses</h3>
+            <h3 className="font-semibold text-lg">Terms and Courses</h3>
 
-            {terms.map((term, index) => (
-              <div key={index} className="border rounded p-4 bg-gray-50 space-y-3">
-                <div>
-                  <label className="font-medium block mb-1">
-                    Term name #{index + 1}
-                  </label>
-                  <input
-                    className="w-full border p-2 rounded"
-                    value={term.term_name}
-                    onChange={(e) =>
-                      handleTermChange(index, "term_name", e.target.value)
-                    }
-                  />
-                </div>
+            {terms.map((term, termIndex) => {
+              const search = term.search || "";
 
-                <div>
-                  <label className="font-medium block mb-1">
-                    Courses (one per line)
-                  </label>
-                  <textarea
-                    className="w-full border p-2 rounded h-32"
-                    value={term.courses_text}
-                    onChange={(e) =>
-                      handleTermChange(index, "courses_text", e.target.value)
-                    }
-                  />
+              // Filter available courses based on search text
+              const filteredCourses = courses.filter((c) => {
+                const needle = search.toLowerCase();
+                return (
+                  c.code?.toLowerCase().includes(needle) ||
+                  c.title?.toLowerCase().includes(needle)
+                );
+              });
+
+              return (
+                <div
+                  key={termIndex}
+                  className="border rounded p-4 bg-gray-50 space-y-3"
+                >
+                  {/* Term name */}
+                  <div>
+                    <label className="font-medium block mb-1">
+                      Term name #{termIndex + 1}
+                    </label>
+                    <input
+                      className="w-full border p-2 rounded bg-gray-100 text-gray-600 cursor-not-allowed"
+                      value={term.term_name}
+                      disabled
+                      readOnly
+                      onChange={(e) =>
+                        handleTermFieldChange(
+                          termIndex,
+                          "term_name",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
+
+                  {/* Selected courses as tags */}
+                  <div>
+                    <label className="font-medium block mb-1">
+                      Selected courses
+                    </label>
+
+                    {term.selectedCourseIds.length === 0 && (
+                      <p className="text-sm text-gray-500">
+                        No courses selected yet.
+                      </p>
+                    )}
+
+                    {term.selectedCourseIds.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {term.selectedCourseIds.map((courseId) => {
+                          const c = getCourseById(courseId);
+                          if (!c) return null;
+
+                          return (
+                            <span
+                              key={courseId}
+                              className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800"
+                            >
+                              {c.code} - {c.title}
+                              <button
+                                type="button"
+                                className="ml-2 text-blue-700 hover:text-blue-900"
+                                onClick={() =>
+                                  handleRemoveCourseFromTerm(
+                                    termIndex,
+                                    courseId
+                                  )
+                                }
+                              >
+                                ×
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Search and course list */}
+                  <div>
+                    <label className="font-medium block mb-1">
+                      Search and add courses
+                    </label>
+                    <input
+                      className="w-full border p-2 rounded mb-2 text-sm"
+                      placeholder="Type part of the code or title..."
+                      value={search}
+                      onChange={(e) =>
+                        handleTermFieldChange(
+                          termIndex,
+                          "search",
+                          e.target.value
+                        )
+                      }
+                    />
+
+                    <div className="max-h-40 overflow-y-auto border rounded bg-white text-sm">
+                      {filteredCourses.length === 0 && (
+                        <p className="px-3 py-2 text-gray-500">
+                          No courses match this search.
+                        </p>
+                      )}
+
+                      {filteredCourses.map((c) => {
+                        const alreadySelected =
+                          term.selectedCourseIds.includes(c.id);
+
+                        return (
+                          <button
+                            key={c.id}
+                            type="button"
+                            className={`w-full text-left px-3 py-2 border-b last:border-b-0 ${
+                              alreadySelected
+                                ? "bg-blue-50 text-blue-800"
+                                : "hover:bg-gray-100"
+                            }`}
+                            onClick={() =>
+                              handleAddCourseToTerm(termIndex, c.id)
+                            }
+                            disabled={alreadySelected}
+                          >
+                            <span className="font-medium">{c.code}</span>{" "}
+                            {" - "}
+                            <span>{c.title}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

@@ -1,7 +1,8 @@
 // ------------------------------------------------------
 // EditProgramStructure.jsx
-// Loads programs with displayName and sends them to the form.
-// The form will show the program field disabled in Edit mode.
+// Loads programs, courses, and the existing program
+// structure, then passes them to ProgramStructureForm.
+// The program selection is read-only in Edit mode.
 // ------------------------------------------------------
 
 import React, { useEffect, useState } from "react";
@@ -17,16 +18,21 @@ const EditProgramStructure = () => {
   const navigate = useNavigate();
 
   const [programs, setPrograms] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [initialData, setInitialData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadAll = async () => {
       try {
-        // Load programs and create displayName
-        const snap = await getDocs(collection(db, "programs"));
+        // Load programs and courses in parallel
+        const [progSnap, courseSnap] = await Promise.all([
+          getDocs(collection(db, "programs")),
+          getDocs(collection(db, "courses")),
+        ]);
 
-        const list = snap.docs.map((doc) => {
+        // Programs with displayName
+        const progList = progSnap.docs.map((doc) => {
           const data = doc.data();
           return {
             id: doc.id,
@@ -36,18 +42,23 @@ const EditProgramStructure = () => {
             }`,
           };
         });
+        progList.sort((a, b) => a.displayName.localeCompare(b.displayName));
+        setPrograms(progList);
 
-        // Sort alphabetically
-        list.sort((a, b) => a.displayName.localeCompare(b.displayName));
+        // Courses list
+        const courseList = courseSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        courseList.sort((a, b) => (a.code || "").localeCompare(b.code || ""));
+        setCourses(courseList);
 
-        setPrograms(list);
-
-        // Load structure from backend
+        // Load existing structure from backend
         const url = buildApiUrl("getProgramStructureById") + `?id=${id}`;
         const res = await fetch(url);
         const data = await res.json();
 
-        if (data.success) {
+        if (data.success && data.item) {
           setInitialData(data.item);
         }
       } catch (err) {
@@ -60,13 +71,14 @@ const EditProgramStructure = () => {
     loadAll();
   }, [id]);
 
+  // Handle submit from ProgramStructureForm
   const handleSubmit = async (formData) => {
     const res = await updateProgramStructure(id, formData);
 
     if (res.success) {
       navigate("/dashboardadmin/structure");
     } else {
-      alert(res.message || "Failed to update structure");
+      alert(res.message || "Failed to update structure.");
     }
   };
 
@@ -76,6 +88,7 @@ const EditProgramStructure = () => {
   return (
     <ProgramStructureForm
       programs={programs}
+      courses={courses}
       initialData={initialData}
       onSubmit={handleSubmit}
     />

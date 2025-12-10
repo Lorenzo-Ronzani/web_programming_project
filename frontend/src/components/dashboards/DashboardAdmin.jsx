@@ -1,26 +1,22 @@
 // ---------------------------------------------------------------------------
 // DashboardAdmin.jsx
 // ---------------------------------------------------------------------------
-// This file renders the administrator dashboard, including:
+// Admin dashboard that shows:
 // - Overview metrics (students, programs, courses, enrollments, avg progress)
-// - Programs table (search, sorting, pagination)
-// - Courses table (search, sorting, pagination)
-// - Students table (search, sorting, pagination)
-// The dashboard uses data from backend API endpoints (getUsers, getCourses,
-// getCoursesUsers, getPrograms).
-// The layout is built with reusable components and utility helpers.
-// All tables use the same sorting and pagination logic.
+// - Programs table
+// - Courses table
+// - Students overview table
+// Uses backend API endpoints: getUsers, getCourses, getCoursesUsers, getPrograms
 // ---------------------------------------------------------------------------
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Correct imports
 import { useAuth } from "../../context/AuthContext";
 import { buildApiUrl } from "../../api";
 
 // ---------------------------------------------------------------------------
-// Small statistic card component used in the overview section
+// Small statistic card
 // ---------------------------------------------------------------------------
 const StatCard = ({ label, value, helper }) => (
   <div className="bg-white border border-gray-200 rounded-xl px-6 py-5 shadow-sm flex flex-col justify-between">
@@ -35,7 +31,7 @@ const StatCard = ({ label, value, helper }) => (
 );
 
 // ---------------------------------------------------------------------------
-// Pagination component used across all table components
+// Generic pagination component
 // ---------------------------------------------------------------------------
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   const goTo = (page) => {
@@ -83,7 +79,9 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   );
 };
 
-// Displays sort arrow in table headers
+// ---------------------------------------------------------------------------
+// Sort arrow for table headers
+// ---------------------------------------------------------------------------
 const SortArrow = ({ active, direction }) => {
   if (!active) return <span className="ml-1 text-gray-300">↕</span>;
   return (
@@ -94,7 +92,7 @@ const SortArrow = ({ active, direction }) => {
 };
 
 // ---------------------------------------------------------------------------
-// PROGRAMS TABLE
+// PROGRAMS TABLE 
 // ---------------------------------------------------------------------------
 const ProgramsTable = ({ programs, navigate }) => {
   const [search, setSearch] = useState("");
@@ -104,7 +102,6 @@ const ProgramsTable = ({ programs, navigate }) => {
 
   const pageSize = 10;
 
-  // Handles sorting when clicking table headers
   const handleSort = (field) => {
     setPage(1);
     setSortField((prev) => {
@@ -117,44 +114,62 @@ const ProgramsTable = ({ programs, navigate }) => {
     });
   };
 
-  // Filtering by search text
+  // Filter by title, credential, area or school
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return programs.filter((p) => {
-      const combined = `${p.title} ${p.credential}`.toLowerCase();
+      const combined = `${p.title} ${p.credential} ${p.area} ${p.school}`.toLowerCase();
       return combined.includes(q);
     });
   }, [programs, search]);
 
-  // Sorting
+  // Sort by selected field
   const sorted = useMemo(() => {
     const data = [...filtered];
+
+    const getVal = (p) => {
+      switch (sortField) {
+        case "credential":
+          return p.credential;
+        case "duration":
+          return p.duration;
+        case "terms":
+          return p.program_length;
+        case "area":
+          return p.area;
+        case "school":
+          return p.school;
+        default:
+          return p.title;
+      }
+    };
+
     data.sort((a, b) => {
-      const valA = (sortField === "credential"
-        ? a.credential
-        : a.title || ""
-      )
-        .toString()
-        .toLowerCase();
+      let aVal = getVal(a);
+      let bVal = getVal(b);
 
-      const valB = (sortField === "credential"
-        ? b.credential
-        : b.title || ""
-      )
-        .toString()
-        .toLowerCase();
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+      }
 
-      if (valA < valB) return sortDirection === "asc" ? -1 : 1;
-      if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+      aVal = (aVal || "").toString().toLowerCase();
+      bVal = (bVal || "").toString().toLowerCase();
+
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
       return 0;
     });
+
     return data;
   }, [filtered, sortField, sortDirection]);
 
   // Pagination
   const totalPages = Math.ceil(sorted.length / pageSize) || 1;
   const currentPage = Math.min(page, totalPages);
-  const paginated = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginated = sorted.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-8">
@@ -164,7 +179,7 @@ const ProgramsTable = ({ programs, navigate }) => {
         <div className="flex gap-3">
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search by title, area, school..."
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64"
             value={search}
             onChange={(e) => {
@@ -213,6 +228,54 @@ const ProgramsTable = ({ programs, navigate }) => {
                     />
                   </span>
                 </th>
+                <th
+                  className="py-3 px-2 cursor-pointer"
+                  onClick={() => handleSort("duration")}
+                >
+                  <span className="inline-flex items-center">
+                    Duration
+                    <SortArrow
+                      active={sortField === "duration"}
+                      direction={sortDirection}
+                    />
+                  </span>
+                </th>
+                <th
+                  className="py-3 px-2 cursor-pointer"
+                  onClick={() => handleSort("terms")}
+                >
+                  <span className="inline-flex items-center">
+                    Terms
+                    <SortArrow
+                      active={sortField === "terms"}
+                      direction={sortDirection}
+                    />
+                  </span>
+                </th>
+                <th
+                  className="py-3 px-2 cursor-pointer"
+                  onClick={() => handleSort("area")}
+                >
+                  <span className="inline-flex items-center">
+                    Area
+                    <SortArrow
+                      active={sortField === "area"}
+                      direction={sortDirection}
+                    />
+                  </span>
+                </th>
+                <th
+                  className="py-3 px-2 cursor-pointer"
+                  onClick={() => handleSort("school")}
+                >
+                  <span className="inline-flex items-center">
+                    School
+                    <SortArrow
+                      active={sortField === "school"}
+                      direction={sortDirection}
+                    />
+                  </span>
+                </th>
                 <th className="py-3 px-2">Actions</th>
               </tr>
             </thead>
@@ -221,6 +284,12 @@ const ProgramsTable = ({ programs, navigate }) => {
                 <tr key={p.id} className="border-b hover:bg-gray-50">
                   <td className="py-2 px-2">{p.title}</td>
                   <td className="py-2 px-2">{p.credential}</td>
+                  <td className="py-2 px-2">{p.duration}</td>
+                  <td className="py-2 px-2">
+                    {p.program_length ? `${p.program_length}` : "N/A"}
+                  </td>
+                  <td className="py-2 px-2">{p.area}</td>
+                  <td className="py-2 px-2">{p.school}</td>
                   <td className="py-2 px-2">
                     <button
                       className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600"
@@ -252,13 +321,12 @@ const ProgramsTable = ({ programs, navigate }) => {
 // ---------------------------------------------------------------------------
 const CoursesTable = ({ courses, navigate }) => {
   const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState("title");
+  const [sortField, setSortField] = useState("code");
   const [sortDirection, setSortDirection] = useState("asc");
   const [page, setPage] = useState(1);
 
   const pageSize = 10;
 
-  // Sorting handler
   const handleSort = (field) => {
     setPage(1);
     setSortField((prev) => {
@@ -271,33 +339,31 @@ const CoursesTable = ({ courses, navigate }) => {
     });
   };
 
-  // Filter
+  // Filter by code, title or instructor
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return courses.filter((c) => {
-      const combined = `${c.code} ${c.title}`.toLowerCase();
+      const combined = `${c.code} ${c.title} ${c.instructor}`.toLowerCase();
       return combined.includes(q);
     });
   }, [courses, search]);
 
-  // Sorting
+  // Sort by selected field
   const sorted = useMemo(() => {
     const data = [...filtered];
 
     const getValue = (item) => {
       switch (sortField) {
-        case "code":
-          return item.code;
-        case "program":
-          return item.program;
+        case "title":
+          return item.title;
         case "instructor":
           return item.instructor;
-        case "status":
-          return item.status;
         case "credits":
           return Number(item.credits);
+        case "active":
+          return item.is_active ? 1 : 0;
         default:
-          return item.title;
+          return item.code;
       }
     };
 
@@ -323,7 +389,10 @@ const CoursesTable = ({ courses, navigate }) => {
   // Pagination
   const totalPages = Math.ceil(sorted.length / pageSize) || 1;
   const currentPage = Math.min(page, totalPages);
-  const paginated = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginated = sorted.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-8">
@@ -333,7 +402,7 @@ const CoursesTable = ({ courses, navigate }) => {
         <div className="flex gap-3">
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search by code, title, instructor..."
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64"
             value={search}
             onChange={(e) => {
@@ -358,28 +427,67 @@ const CoursesTable = ({ courses, navigate }) => {
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="border-b text-gray-600">
-                {[
-                  ["code", "Code"],
-                  ["title", "Title"],
-                  ["program", "Program"],
-                  ["instructor", "Instructor"],
-                  ["credits", "Credits"],
-                  ["status", "Status"],
-                ].map(([field, label]) => (
-                  <th
-                    key={field}
-                    className="py-3 px-2 cursor-pointer"
-                    onClick={() => handleSort(field)}
-                  >
-                    <span className="inline-flex items-center">
-                      {label}
-                      <SortArrow
-                        active={sortField === field}
-                        direction={sortDirection}
-                      />
-                    </span>
-                  </th>
-                ))}
+                <th
+                  className="py-3 px-2 cursor-pointer"
+                  onClick={() => handleSort("code")}
+                >
+                  <span className="inline-flex items-center">
+                    Code
+                    <SortArrow
+                      active={sortField === "code"}
+                      direction={sortDirection}
+                    />
+                  </span>
+                </th>
+                <th
+                  className="py-3 px-2 cursor-pointer"
+                  onClick={() => handleSort("title")}
+                >
+                  <span className="inline-flex items-center">
+                    Title
+                    <SortArrow
+                      active={sortField === "title"}
+                      direction={sortDirection}
+                    />
+                  </span>
+                </th>
+                <th
+                  className="py-3 px-2 cursor-pointer"
+                  onClick={() => handleSort("instructor")}
+                >
+                  <span className="inline-flex items-center">
+                    Instructor
+                    <SortArrow
+                      active={sortField === "instructor"}
+                      direction={sortDirection}
+                    />
+                  </span>
+                </th>
+                <th
+                  className="py-3 px-2 cursor-pointer"
+                  onClick={() => handleSort("credits")}
+                >
+                  <span className="inline-flex items-center">
+                    Credits
+                    <SortArrow
+                      active={sortField === "credits"}
+                      direction={sortDirection}
+                    />
+                  </span>
+                </th>
+                <th
+                  className="py-3 px-2 cursor-pointer"
+                  onClick={() => handleSort("active")}
+                >
+                  <span className="inline-flex items-center">
+                    Active
+                    <SortArrow
+                      active={sortField === "active"}
+                      direction={sortDirection}
+                    />
+                  </span>
+                </th>
+                <th className="py-3 px-2">Show on Home</th>
                 <th className="py-3 px-2">Actions</th>
               </tr>
             </thead>
@@ -388,18 +496,28 @@ const CoursesTable = ({ courses, navigate }) => {
                 <tr key={c.id} className="border-b hover:bg-gray-50">
                   <td className="py-2 px-2">{c.code}</td>
                   <td className="py-2 px-2">{c.title}</td>
-                  <td className="py-2 px-2">{c.program}</td>
                   <td className="py-2 px-2">{c.instructor}</td>
                   <td className="py-2 px-2">{c.credits}</td>
                   <td className="py-2 px-2">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
-                        c.status === "active"
+                        c.is_active
                           ? "bg-green-100 text-green-700"
                           : "bg-gray-200 text-gray-600"
                       }`}
                     >
-                      {c.status}
+                      {c.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td className="py-2 px-2">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        c.show_on_homepage
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-gray-200 text-gray-600"
+                      }`}
+                    >
+                      {c.show_on_homepage ? "Yes" : "No"}
                     </span>
                   </td>
                   <td className="py-2 px-2">
@@ -429,7 +547,7 @@ const CoursesTable = ({ courses, navigate }) => {
 };
 
 // ---------------------------------------------------------------------------
-// STUDENTS TABLE
+// STUDENTS TABLE 
 // ---------------------------------------------------------------------------
 const StudentsOverviewTable = ({ users, coursesUsers }) => {
   const [search, setSearch] = useState("");
@@ -439,25 +557,25 @@ const StudentsOverviewTable = ({ users, coursesUsers }) => {
 
   const pageSize = 10;
 
-// Build student rows with computed course count
-// Filter to show only users with role === "student"
-const studentRows = useMemo(() => {
-  return users
-    .filter((u) => u.role === "student") 
-    .map((u) => ({
-      id: u.studentId,
-      name:
-        u.displayName ||
-        [u.firstName, u.lastName].filter(Boolean).join(" ") ||
-        "Unnamed student",
-      email: u.email,
-      status: u.status,
-      courses:
-        coursesUsers.filter(
-          (cu) => cu.user_id === u.id || cu.student_id === u.id
-        ).length || 0,
-    }));
-}, [users, coursesUsers]);
+  // Build student rows with computed course count
+  // Filter to show only users with role "student"
+  const studentRows = useMemo(() => {
+    return users
+      .filter((u) => u.role === "student")
+      .map((u) => ({
+        id: u.studentId,
+        name:
+          u.displayName ||
+          [u.firstName, u.lastName].filter(Boolean).join(" ") ||
+          "Unnamed student",
+        email: u.email,
+        status: u.status,
+        courses:
+          coursesUsers.filter(
+            (cu) => cu.user_id === u.id || cu.student_id === u.id
+          ).length || 0,
+      }));
+  }, [users, coursesUsers]);
 
   const handleSort = (field) => {
     setPage(1);
@@ -492,7 +610,10 @@ const studentRows = useMemo(() => {
 
   const totalPages = Math.ceil(sorted.length / pageSize) || 1;
   const currentPage = Math.min(page, totalPages);
-  const paginated = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginated = sorted.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-8">
@@ -578,7 +699,6 @@ const studentRows = useMemo(() => {
 // ---------------------------------------------------------------------------
 // MAIN DASHBOARD PAGE
 // ---------------------------------------------------------------------------
-
 const DashboardAdmin = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -587,25 +707,64 @@ const DashboardAdmin = () => {
   const [courses, setCourses] = useState([]);
   const [coursesUsers, setCoursesUsers] = useState([]);
   const [programs, setPrograms] = useState([]);
-
   const [loading, setLoading] = useState(true);
 
-  // Load all required data from backend API Endpoints
   useEffect(() => {
     async function load() {
       try {
-        const [u, c, cu, p] = await Promise.all([
-          fetch(buildApiUrl("getUsers")).then((r) => r.json()),
-          fetch(buildApiUrl("getCourses")).then((r) => r.json()),
-          fetch(buildApiUrl("getCoursesUsers")).then((r) => r.json()),
-          fetch(buildApiUrl("getPrograms")).then((r) => r.json()),
-        ]);
+        const [usersRes, coursesRes, coursesUsersRes, programsRes] =
+          await Promise.all([
+            fetch(buildApiUrl("getUsers")).then((r) => r.json()),
+            fetch(buildApiUrl("getCourses")).then((r) => r.json()),
+            fetch(buildApiUrl("getCoursesUsers")).then((r) => r.json()),
+            fetch(buildApiUrl("getPrograms")).then((r) => r.json()),
+          ]);
 
-        // Global sorting by title
-        setUsers(u || []);
-        setCourses((c || []).sort((a, b) => a.title.localeCompare(b.title)));
-        setCoursesUsers(cu || []);
-        setPrograms((p.items || []).sort((a, b) => a.title.localeCompare(b.title)));
+        // Users and enrollments (allow both array or {items})
+        const usersData = usersRes.items || usersRes || [];
+        const coursesUsersData = coursesUsersRes.items || coursesUsersRes || [];
+
+        setUsers(usersData);
+        setCoursesUsers(coursesUsersData);
+
+        // Map programs from new structure
+        const programsData = (programsRes.items || []).map((p) => ({
+          id: p.id,
+          title: p.title,
+          description: p.description,
+          credential: p.credential,
+          duration: p.duration,
+          program_length: p.program_length,
+          area: p.area,
+          school: p.school,
+          color: p.color,
+          icon: p.icon,
+        }));
+
+        // Map courses from new structure
+        const coursesData = (coursesRes.items || []).map((c) => ({
+          id: c.id,
+          code: c.code,
+          title: c.title,
+          instructor: c.instructor,
+          credits: c.credits,
+          color: c.color,
+          icon: c.icon,
+          is_active: c.is_active,
+          show_on_homepage: c.show_on_homepage,
+        }));
+
+        // Sort alphabetically by title
+        setPrograms(
+          programsData.sort((a, b) =>
+            (a.title || "").localeCompare(b.title || "")
+          )
+        );
+        setCourses(
+          coursesData.sort((a, b) =>
+            (a.title || "").localeCompare(b.title || "")
+          )
+        );
       } catch (err) {
         console.error("Dashboard load error:", err);
       } finally {
@@ -622,7 +781,7 @@ const DashboardAdmin = () => {
   const totalPrograms = programs.length;
   const totalEnrollments = coursesUsers.length;
 
-  // Average progress calculation
+  // Average progress based on coursesUsers.progress
   const avgProgress = (() => {
     const progressValues = coursesUsers
       .map((r) => Number(r.progress))
@@ -634,17 +793,17 @@ const DashboardAdmin = () => {
     return Math.round(sum / progressValues.length);
   })();
 
-  if (loading)
+  if (loading) {
     return (
       <div className="p-10 text-center text-gray-500">
         Loading dashboard...
       </div>
     );
+  }
 
   return (
     <div className="p-6 md:p-10 bg-gray-50 min-h-screen">
-
-      {/* Dashboard header */}
+      {/* Header */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900">
           Welcome, Admin BowProject
@@ -688,13 +847,13 @@ const DashboardAdmin = () => {
         />
       </div>
 
-      {/* Programs Table */}
+      {/* Programs table */}
       <ProgramsTable programs={programs} navigate={navigate} />
 
-      {/* Courses Table */}
+      {/* Courses table */}
       <CoursesTable courses={courses} navigate={navigate} />
 
-      {/* Students Table */}
+      {/* Students table */}
       <StudentsOverviewTable users={users} coursesUsers={coursesUsers} />
     </div>
   );

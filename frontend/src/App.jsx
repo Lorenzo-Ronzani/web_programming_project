@@ -12,14 +12,18 @@ import { AuthProvider } from "./context/AuthContext";
    ================================================ */
 import Home from "./pages/Home";
 import Programs from "./components/programs/Programs";
-import CourseDetails from "./components/programs/CourseDetails";
+import ProgramDetails from "./components/programs/ProgramDetails";
 import ProgramsAll from "./pages/ProgramsAll";
 import Courses from "./components/courses/Courses";
 import CoursesAll from "./pages/CoursesAll";
+import CourseDetails from "./components/courses/CourseDetails";
+
 import Terms from "./components/terms/Terms";
 import MainContent from "./pages/MainContent";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+
+
 
 /* ================================================
    STUDENT AREA
@@ -34,11 +38,10 @@ import AdminLayout from "./components/admin/AdminLayout";
 import DashboardAdmin from "./components/dashboards/DashboardAdmin";
 
 /* ================================================
-   ADMIN – USER & COURSE MANAGEMENT
+   ADMIN – USER MANAGEMENT
    ================================================ */
 import ManageUsers from "./components/users/ManageUsers";
 import UserForm from "./components/users/UserForm";
-import CourseEdit from "./components/courses/CourseEdit";
 
 /* ================================================
    SHARED SETTINGS
@@ -51,14 +54,14 @@ import Settings from "./components/users/Settings";
 import ProtectedRoute from "./components/routes/ProtectedRoute";
 
 /* ================================================
-   ADMIN — PROGRAMS (NEW FILES)
+   ADMIN — PROGRAMS
    ================================================ */
 import ProgramList from "./pages/admin/programs/ProgramList";
 import AddProgram from "./pages/admin/programs/AddProgram";
 import EditProgram from "./pages/admin/programs/EditProgram";
 
 /* ================================================
-   ADMIN — PROGRAMS SCTRUCTURE
+   ADMIN — PROGRAM STRUCTURE
    ================================================ */
 import ProgramStructureList from "./pages/admin/structure/ProgramStructureList";
 import AddProgramStructure from "./pages/admin/structure/AddProgramStructure";
@@ -79,18 +82,27 @@ import AddRequirement from "./pages/admin/requirements/AddRequirement";
 import EditRequirement from "./pages/admin/requirements/EditRequirement";
 
 /* ================================================
-   ADMIN — ADMISSIONS (REAL FILES)
+   ADMIN — ADMISSIONS
    ================================================ */
 import AdmissionsList from "./pages/admin/admissions/AdmissionsList";
 import AddAdmission from "./pages/admin/admissions/AddAdmission";
 import EditAdmission from "./pages/admin/admissions/EditAdmission";
 
 /* ================================================
-   ADMIN — INTAKES (PUBLIC VERSIONS)
+   ADMIN — INTAKES
    ================================================ */
 import PublicIntakesList from "./pages/admin/intakes/PublicIntakesList";
 import AddPublicIntake from "./pages/admin/intakes/AddPublicIntake";
 import EditPublicIntake from "./pages/admin/intakes/EditPublicIntake";
+
+
+/* ================================================
+   ADMIN — COURSES 
+   ================================================ */
+import CourseList from "./pages/admin/courses/CourseList";
+import AddCourse from "./pages/admin/courses/AddCourse";
+import EditCourse from "./pages/admin/courses/EditCourse";
+
 
 
 
@@ -119,7 +131,7 @@ function App() {
                  ======================================== */}
               <Route path="/" element={<Home />} />
               <Route path="/programs" element={<Programs />} />
-              <Route path="/program/:id" element={<CourseDetails />} />
+              <Route path="/program/:id" element={<ProgramDetails />} />
 
               <Route path="/programsall" element={<ProgramsAll />} />
               <Route path="/courses" element={<Courses />} />
@@ -128,6 +140,10 @@ function App() {
               <Route path="/content" element={<MainContent />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+
+              {/* Course Details*/}
+              <Route path="/courses/:id" element={<CourseDetails />} />
+
 
               {/* ========================================
                  STUDENT ROUTES
@@ -175,7 +191,7 @@ function App() {
                 <Route path="structure/add" element={<AddProgramStructure />} />
                 <Route path="structure/edit/:id" element={<EditProgramStructure />} />
 
-                {/* ADMIN — REQUIEREMENTS */}
+                {/* ADMIN — REQUIREMENTS */}
                 <Route path="requirements" element={<RequirementsList />} />
                 <Route path="requirements/add" element={<AddRequirement />} />
                 <Route path="requirements/edit/:id" element={<EditRequirement />} />
@@ -190,10 +206,15 @@ function App() {
                 <Route path="admissions/add" element={<AddAdmission />} />
                 <Route path="admissions/edit/:id" element={<EditAdmission />} />
 
-                {/* ADMIN — INTAKES (PUBLIC) */}
+                {/* ADMIN — INTAKES */}
                 <Route path="intakes" element={<PublicIntakesList />} />
                 <Route path="intakes/add" element={<AddPublicIntake />} />
                 <Route path="intakes/edit/:id" element={<EditPublicIntake />} />
+
+                {/* ADMIN — COURSES (NEW) */}
+                <Route path="courses" element={<CourseList />} />
+                <Route path="courses/add" element={<AddCourse />} />
+                <Route path="courses/edit/:id" element={<EditCourse />} />
 
               </Route>
 
@@ -223,24 +244,6 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <UserForm />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/courseedit/:code"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <CourseEdit />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/courseadd"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <CourseEdit />
                   </ProtectedRoute>
                 }
               />

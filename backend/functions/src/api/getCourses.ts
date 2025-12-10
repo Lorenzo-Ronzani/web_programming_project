@@ -1,33 +1,26 @@
 import { onRequest } from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
 import { db } from "../config/firebase";
 
-/**
- * Cloud Function: getCourses
- * Returns all courses from Firestore with CORS enabled.
- */
-export const getCourses = onRequest(
-  { cors: true },
-  async (req, res): Promise<void> => {
-    try {
-      logger.info("Fetching courses from Firestore...");
 
-      const snapshot = await db.collection("courses").get();
+export const getCourses = onRequest({ cors: true }, async (req: any, res: any) => {
+  try {
+    const snapshot = await db.collection("courses").get();
 
-      const courses = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+    const items = snapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
-      logger.info(`Fetched ${courses.length} courses successfully.`);
+    return res.status(200).json({
+      success: true,
+      items,
+    });
 
-      res.status(200).json(courses);
-    } catch (error: any) {
-      logger.error("Error fetching courses:", error);
-      res.status(500).json({
-        error: "Failed to fetch courses from database",
-        details: error.message || error,
-      });
-    }
+  } catch (error: any) {
+    console.error("GET COURSES ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch courses",
+    });
   }
-);
+});

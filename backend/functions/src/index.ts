@@ -60,6 +60,14 @@ export { getPublicIntakeById } from "./api/getPublicIntakeById";
 export { updatePublicIntake } from "./api/updatePublicIntake";
 export { deletePublicIntake } from "./api/deletePublicIntake";
 
+
+// COURSES ------------------------------------------------------------------
+export { createCourse } from "./api/createCourse";
+export { getCourseById } from "./api/getCourseById";
+export { updateCourse } from "./api/updateCourse";
+export { deleteCourse } from "./api/deleteCourse";
+
+
 // ------------------------------------------------------
 // Firestore triggers
 // ------------------------------------------------------

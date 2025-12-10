@@ -1,84 +1,131 @@
 import { useEffect, useState } from "react";
 import { buildApiUrl } from "../../api";
+import { useNavigate } from "react-router-dom";
 
+// Color Map for Gradient
+const COLOR_GRADIENT = {
+  blue: "from-blue-500 to-blue-700",
+  green: "from-green-500 to-green-700",
+  purple: "from-purple-500 to-purple-700",
+  yellow: "from-yellow-500 to-yellow-700",
+  red: "from-red-500 to-red-700",
+  indigo: "from-indigo-500 to-indigo-700",
+  cyan: "from-cyan-500 to-cyan-700",
+  orange: "from-orange-500 to-orange-700",
+  teal: "from-teal-500 to-teal-700",
+  pink: "from-pink-500 to-pink-700",
+  emerald: "from-emerald-500 to-emerald-700",
+  violet: "from-violet-500 to-violet-700",
+  rose: "from-rose-500 to-rose-700",
+  amber: "from-amber-500 to-amber-700",
+  lime: "from-lime-500 to-lime-700",
+  slate: "from-slate-500 to-slate-700",
+  fuchsia: "from-fuchsia-500 to-fuchsia-700",
+  sky: "from-sky-500 to-sky-700",
+  stone: "from-stone-500 to-stone-700",
+  neutral: "from-neutral-500 to-neutral-700",
+};
 
 function Courses({ limit }) {
-  // Tailwind color classes for dynamic styling
-  const colorMap = {  
-    blue: "bg-blue-50 border-blue-200 text-blue-700",
-    green: "bg-green-50 border-green-200 text-green-700",
-    purple: "bg-purple-50 border-purple-200 text-purple-700",
-    yellow: "bg-yellow-50 border-yellow-200 text-yellow-700",
-    red: "bg-red-50 border-red-200 text-red-700",
-    indigo: "bg-indigo-50 border-indigo-200 text-indigo-700",
-    cyan: "bg-cyan-50 border-cyan-200 text-cyan-700",
-    orange: "bg-orange-50 border-orange-200 text-orange-700",
-    teal: "bg-teal-50 border-teal-200 text-teal-700",
-    pink: "bg-pink-50 border-pink-200 text-pink-700",
-    emerald: "bg-emerald-50 border-emerald-200 text-emerald-700",
-    violet: "bg-violet-50 border-violet-200 text-violet-700",
-    rose: "bg-rose-50 border-rose-200 text-rose-700",
-    amber: "bg-amber-50 border-amber-200 text-amber-700",
-    lime: "bg-lime-50 border-lime-200 text-lime-700",
-    slate: "bg-slate-50 border-slate-200 text-slate-700",
-    fuchsia: "bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700",
-    sky: "bg-sky-50 border-sky-200 text-sky-700",
-    stone: "bg-stone-50 border-stone-200 text-stone-700",
-    neutral: "bg-neutral-50 border-neutral-200 text-neutral-700",
-  };
-
-  // React state to store the list of courses
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
 
-  // Fetch courses from backend (Firebase Functions)
+  // Fetch courses from backend
   useEffect(() => {
-    // Automatically builds the correct API URL:
-    // - Dev: http://localhost:5001/.../getCourses
-    // - Prod: https://getcourses-xxxx.a.run.app
     const url = buildApiUrl("getCourses");
 
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
         console.log("Fetched courses:", data);
-        setCourses(data);
+
+        if (data && Array.isArray(data.items)) {
+          setCourses(data.items.filter((c) => c.is_active && c.show_on_homepage));
+        } else if (Array.isArray(data)) {
+          setCourses(data.filter((c) => c.is_active && c.show_on_homepage));
+        } else {
+          setCourses([]);
+        }
       })
       .catch((err) => console.error("Error fetching courses:", err));
   }, []);
 
-  // Apply "limit" if the component receives a limit prop
+  // Apply limit if provided
   const displayedCourses = limit ? courses.slice(0, limit) : courses;
 
   return (
-    <section id="courses" className="bg-white py-12">
+    <section id="courses" className="bg-gray-50 py-16">
       <div className="max-w-6xl mx-auto px-6 text-center">
 
         {/* Section Title */}
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Courses</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-3">
+          Featured Courses
+        </h2>
 
-        {/* Section Subtitle */}
-        <p className="text-gray-600 mb-10">
-          Explore the key courses that form the foundation of your software development journey.
+        {/* Subtitle */}
+        <p className="text-gray-600 mb-12">
+          Explore the key courses available in our academic offerings.
         </p>
 
-        {/* Courses Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+
+          {displayedCourses.length === 0 && (
+            <p className="col-span-full text-gray-500">No courses available.</p>
+          )}
+
           {displayedCourses.map((course) => (
             <div
               key={course.id}
-              className={`${
-                colorMap[course.color] || "bg-gray-50 border-gray-200 text-gray-700"
-              } rounded-xl p-6 shadow hover:shadow-lg transition`}
+              className="bg-white rounded-xl shadow hover:shadow-xl transition cursor-pointer overflow-hidden"
+              onClick={() => navigate(`/courses/${course.id}`)}
             >
-              {/* Course Title */}
-              <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+              {/* TOP COLOR BAR WITH ICON */}
+              <div
+                className={`h-40 flex items-center justify-center text-white text-6xl bg-gradient-to-r ${
+                  COLOR_GRADIENT[course.color] || COLOR_GRADIENT.indigo
+                }`}
+              >
+                <span className="material-symbols-outlined">
+                  {course.icon || "school"}
+                </span>
+              </div>
 
-              {/* Course Description */}
-              <p className="text-sm text-gray-600">{course.description}</p>
+              {/* CARD CONTENT */}
+              <div className="p-5 text-left">
+
+                {/* CODE + CREDITS */}
+                <div className="flex justify-between text-sm text-gray-500 mb-1">
+                  <span className="font-semibold">{course.code}</span>
+                  <span>{course.credits} credits</span>
+                </div>
+
+                {/* TITLE */}
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  {course.title}
+                </h3>
+
+                {/* Instructor */}
+                <p className="text-gray-600 text-sm mb-4">
+                  Instructor: {course.instructor || "TBA"}
+                </p>
+
+                {/* BUTTON  */}
+                <button
+                  className="text-indigo-600 font-medium text-sm hover:text-indigo-800"
+                  onClick={(e) => {
+                    e.stopPropagation(); // prevents triggering the card onClick
+                    navigate(`/courses/${course.id}`);
+                  }}
+                >
+                  View Details →
+                </button>
+
+              </div>
             </div>
           ))}
-        </div>
 
+        </div>
       </div>
     </section>
   );

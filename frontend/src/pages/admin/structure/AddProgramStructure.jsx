@@ -1,6 +1,7 @@
 // ------------------------------------------------------
 // AddProgramStructure.jsx
-// Loads programs with displayName and passes to the form.
+// Loads programs and courses from Firestore and
+// passes them to ProgramStructureForm for creation.
 // ------------------------------------------------------
 
 import React, { useEffect, useState } from "react";
@@ -12,16 +13,22 @@ import { useNavigate } from "react-router-dom";
 
 const AddProgramStructure = () => {
   const [programs, setPrograms] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadPrograms = async () => {
+    // Load programs and courses in parallel
+    const loadData = async () => {
       try {
-        const snap = await getDocs(collection(db, "programs"));
+        const [progSnap, courseSnap] = await Promise.all([
+          getDocs(collection(db, "programs")),
+          getDocs(collection(db, "courses")),
+        ]);
 
-        const items = snap.docs.map((doc) => {
+        // Map programs with displayName
+        const progItems = progSnap.docs.map((doc) => {
           const data = doc.data();
           return {
             id: doc.id,
@@ -32,39 +39,54 @@ const AddProgramStructure = () => {
           };
         });
 
-        // Sort alphabetically
-        items.sort((a, b) => a.displayName.localeCompare(b.displayName));
+        progItems.sort((a, b) => a.displayName.localeCompare(b.displayName));
+        setPrograms(progItems);
 
-        setPrograms(items);
+        // Map courses
+        const courseItems = courseSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Optional: sort courses by code
+        courseItems.sort((a, b) => (a.code || "").localeCompare(b.code || ""));
+        setCourses(courseItems);
       } catch (err) {
-        console.error("Error loading programs:", err);
+        console.error("Error loading programs or courses:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadPrograms();
+    loadData();
   }, []);
 
-  const handleSubmit = async (data) => {
-    const res = await createProgramStructure(data);
+  // Handles submit from ProgramStructureForm
+  const handleSubmit = async (payload) => {
+    const res = await createProgramStructure(payload);
 
     if (res.success) {
-      setMessage("Program structure created successfully!");
+      setMessage("Program structure created successfully.");
       setTimeout(() => {
         navigate("/dashboardadmin/structure");
       }, 1000);
     } else {
-      setMessage(res.message || "Failed to create program structure");
+      setMessage(res.message || "Failed to create program structure.");
     }
   };
 
-  if (loading) return <p>Loading programs...</p>;
+  if (loading) {
+    return <p>Loading programs and courses...</p>;
+  }
 
   return (
     <div>
       {message && <p className="mb-4 text-blue-600">{message}</p>}
-      <ProgramStructureForm programs={programs} onSubmit={handleSubmit} />
+      <ProgramStructureForm
+        programs={programs}
+        courses={courses}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 };

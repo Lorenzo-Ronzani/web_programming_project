@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { buildApiUrl } from "../../api";
 
-import TopBar from "../../components/topbar/TopBar";
-import TuitionSection from "../../components/programs/TuitionSection";
+import TopBar from "../topbar/TopBar";
+import TuitionSection from "./TuitionSection";
 
 /* -----------------------------------------------------
    STATUS COLORS FOR INTAKES (Open, Closed, Not Offered)
@@ -26,7 +26,7 @@ const statusStyles = {
   },
 };
 
-const CourseDetails = () => {
+const ProgramDetails = () => {
   const { id } = useParams();
 
   const [program, setProgram] = useState(null);
@@ -357,8 +357,10 @@ const CourseDetails = () => {
                 </h3>
 
                 <ul className="list-disc ml-6 text-gray-700 space-y-1">
-                  {term.courses?.map((course, j) => (
-                    <li key={j}>{course}</li>
+                  {term.courses?.map((c, j) => (
+                    <li key={j}>
+                      {c.course_code} - {c.course_title}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -370,4 +372,4 @@ const CourseDetails = () => {
   );
 };
 
-export default CourseDetails;
+export default ProgramDetails;
