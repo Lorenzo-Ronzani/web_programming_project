@@ -76,7 +76,7 @@ export { createStudentProgram } from "./api/createStudentProgram";
 export { registerProgram } from "./api/registerProgram";
 export { registerStudentCourse } from "./api/registerStudentCourse";
 export { getStudentCourses } from "./api/getStudentCourses";
-
+export { updateStudentCourseGrade } from "./api/updateStudentCourseGrade";
 
 
 // ------------------------------------------------------

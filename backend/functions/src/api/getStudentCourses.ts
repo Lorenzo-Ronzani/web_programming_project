@@ -1,7 +1,7 @@
 // ------------------------------------------------------
 // getStudentCourses.ts
 // Returns all course registrations for a specific student
-// Query: student_id=XYZ
+// Query: studentId=XYZ
 // ------------------------------------------------------
 
 import { onRequest } from "firebase-functions/v2/https";
@@ -9,18 +9,18 @@ import { db } from "../config/firebase";
 
 export const getStudentCourses = onRequest({ cors: true }, async (req: any, res: any) => {
   try {
-    const student_id = req.query.student_id;
+    const studentId = req.query.studentId;
 
-    if (!student_id) {
+    if (!studentId) {
       return res.status(400).json({
         success: false,
-        message: "Missing student_id parameter.",
+        message: "Missing studentId parameter.",
       });
     }
 
     const snapshot = await db
       .collection("studentCourses")
-      .where("student_id", "==", student_id)
+      .where("student_id", "==", studentId)
       .get();
 
     const items = snapshot.docs.map((doc: any) => ({

@@ -45,6 +45,8 @@ import DashboardAdmin from "./components/dashboards/DashboardAdmin";
 import ManageUsers from "./components/users/ManageUsers";
 import UserForm from "./components/users/UserForm";
 
+
+
 /* ================================================
    SHARED SETTINGS
    ================================================ */
@@ -106,6 +108,13 @@ import AddCourse from "./pages/admin/courses/AddCourse";
 import EditCourse from "./pages/admin/courses/EditCourse";
 
 
+/* ================================================
+   ADMIN — STUDENT COURSE GRADES 
+   ================================================ */
+//import AdminStudentCourses from "./pages/admin/students/AdminStudentCourses";
+import AdminStudentList from "./pages/admin/students/AdminStudentList"
+import AdminStudentCoursesList from "./pages/admin/students/AdminStudentCoursesList"
+import AdminStudentCourseEditor from "./pages/admin/students/AdminStudentCourseEditor"
 
 
 /*
@@ -178,7 +187,7 @@ function App() {
               />
 
               {/* ========================================
-                 ADMIN AREA (NESTED)
+                 ADMIN AREA 
                  ======================================== */}
               <Route
                 path="/dashboardadmin"
@@ -222,10 +231,18 @@ function App() {
                 <Route path="intakes/add" element={<AddPublicIntake />} />
                 <Route path="intakes/edit/:id" element={<EditPublicIntake />} />
 
-                {/* ADMIN — COURSES (NEW) */}
+                {/* ADMIN — COURSES */}
                 <Route path="courses" element={<CourseList />} />
                 <Route path="courses/add" element={<AddCourse />} />
                 <Route path="courses/edit/:id" element={<EditCourse />} />
+
+                {/* ADMIN — USERS */}
+                {/*<Route path="student-courses" element={<AdminStudentCourses />} />*/}
+                <Route path="students" element={<AdminStudentList />} />
+                <Route path="students/:id" element={<AdminStudentCoursesList />} />
+                <Route path="students/:id/:courseId" element={<AdminStudentCourseEditor />} />
+
+
 
               </Route>
 
