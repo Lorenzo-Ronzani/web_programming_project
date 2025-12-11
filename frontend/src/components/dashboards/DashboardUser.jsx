@@ -22,13 +22,11 @@ const DashboardUser = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Removes message feedback
   const resetFeedback = () => {
     setMessage("");
     setError("");
   };
 
-  // Extract numeric part of term name (Term 2 → 2)
   const getTermNumber = (termName) => {
     if (!termName) return 0;
     const match = termName.match(/\d+/);
@@ -60,13 +58,11 @@ const DashboardUser = () => {
     if (studentId) loadStudentProgram();
   }, [studentId, navigate]);
 
-  // --------------------------------------------------------------------------
-  // Helper — load student's courses
-  // --------------------------------------------------------------------------
+  // Load student's courses
   const fetchStudentCourses = async () => {
     try {
       const res = await fetch(
-        buildApiUrl("getStudentCourses") + `?studentId=${studentId}` // fixed param
+        buildApiUrl("getStudentCourses") + `?studentId=${studentId}`
       );
       const json = await res.json();
 
@@ -77,7 +73,7 @@ const DashboardUser = () => {
   };
 
   // --------------------------------------------------------------------------
-  // Step 2 — Load program structure, course catalog, and enrollments
+  // Step 2 — Load program structure, courses, and enrollments
   // --------------------------------------------------------------------------
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -121,8 +117,6 @@ const DashboardUser = () => {
   // --------------------------------------------------------------------------
   // Derived Data
   // --------------------------------------------------------------------------
-
-  // A set containing course_ids where the student is enrolled or completed
   const enrolledCourseIds = useMemo(
     () =>
       new Set(
@@ -138,7 +132,6 @@ const DashboardUser = () => {
     [studentCourses]
   );
 
-  // GPA, credits, etc.
   const overview = useMemo(() => {
     if (!Array.isArray(studentCourses) || !Array.isArray(allCourses)) {
       return {
@@ -190,7 +183,6 @@ const DashboardUser = () => {
     };
   }, [studentCourses, allCourses]);
 
-  // GPA color logic
   const gpaClass =
     overview.gpa >= 3
       ? "text-green-600"
@@ -198,7 +190,6 @@ const DashboardUser = () => {
       ? "text-yellow-600"
       : "text-red-600";
 
-  // GPA Badge
   const gpaBadge =
     overview.gpa >= 3.7
       ? { text: "Honor Roll", color: "bg-green-100 text-green-700" }
@@ -208,7 +199,6 @@ const DashboardUser = () => {
       ? { text: "Satisfactory", color: "bg-yellow-100 text-yellow-700" }
       : { text: "Academic Warning", color: "bg-red-100 text-red-700" };
 
-  // Build list of terms and course cards
   const termsView = useMemo(() => {
     if (!programStructure?.terms) return [];
 
@@ -238,7 +228,7 @@ const DashboardUser = () => {
   const currentTermNumber = getTermNumber(studentProgram?.current_term);
 
   // --------------------------------------------------------------------------
-  // Enroll Button Handler
+  // Enroll Button
   // --------------------------------------------------------------------------
   const handleEnroll = async (course) => {
     resetFeedback();
@@ -313,7 +303,7 @@ const DashboardUser = () => {
           </div>
         </div>
 
-        {/* Feedback messages */}
+        {/* Feedback */}
         {message && (
           <div className="mb-4 rounded-lg bg-green-100 px-4 py-2 text-sm text-green-700">
             {message}
@@ -325,7 +315,6 @@ const DashboardUser = () => {
           </div>
         )}
 
-        {/* Loading */}
         {loading ? (
           <p className="text-gray-600 text-lg">Loading your dashboard...</p>
         ) : (
@@ -336,13 +325,11 @@ const DashboardUser = () => {
             </h3>
 
             <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-4">
-              {/* Total Credits */}
               <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
                 <h4 className="text-2xl font-bold">{overview.totalCredits}</h4>
                 <p className="text-sm text-gray-500">Total Credits</p>
               </div>
 
-              {/* GPA */}
               <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
                 <h4 className={`text-2xl font-bold ${gpaClass}`}>
                   {overview.gpa}
@@ -356,32 +343,27 @@ const DashboardUser = () => {
                 </span>
               </div>
 
-              {/* Completed Credits */}
               <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
                 <h4 className="text-2xl font-bold">{overview.completedCredits}</h4>
                 <p className="text-sm text-gray-500">Completed Credits</p>
               </div>
 
-              {/* Remaining Credits */}
               <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
                 <h4 className="text-2xl font-bold">{overview.remainingCredits}</h4>
                 <p className="text-sm text-gray-500">Remaining Credits</p>
 
-                {/* Progress Bar */}
                 <div className="mt-2 h-2 w-full rounded bg-gray-200">
                   <div
                     className="h-2 rounded bg-blue-600"
                     style={{
-                      width: `${
-                        (overview.totalCredits / 60) * 100
-                      }%`,
+                      width: `${(overview.totalCredits / 60) * 100}%`,
                     }}
                   ></div>
                 </div>
               </div>
             </div>
 
-            {/* Term Sections */}
+            {/* Program Structure */}
             <h3 className="mb-4 text-lg font-semibold text-gray-800">
               Program Structure – {studentProgram.program_title}
             </h3>
@@ -406,19 +388,53 @@ const DashboardUser = () => {
                         const isEnrolled = course.isEnrolled;
                         const isSaving = savingCourseId === course.course_id;
 
+                        // *****************************************************
+                        // STATUS LOGIC — updated to include "Completed"
+                        // *****************************************************
+
+                        // Find student's record for this course
+                        const studentCourse = studentCourses.find(
+                          (sc) => sc.course_id === course.course_id
+                        );
+
                         let statusLabel = "Not enrolled";
                         let statusColor = "bg-gray-100 text-gray-600";
 
-                        if (isEnrolled) {
+                        /*
+                          Completed Status
+                          If the student finished the course, show Completed.
+                        */
+                        if (
+                          studentCourse?.status === "completed" ||
+                          studentCourse?.completed === true
+                        ) {
+                          statusLabel = "Completed";
+                          statusColor = "bg-blue-100 text-blue-700";
+
+                        /*
+                          Enrolled Status
+                          Normal enrollment state.
+                        */
+                        } else if (isEnrolled) {
                           statusLabel = "Enrolled";
                           statusColor = "bg-green-100 text-green-600";
+
+                        /*
+                          Inactive Status
+                          Future term courses cannot be enrolled yet.
+                        */
                         } else if (isFutureTerm) {
                           statusLabel = "Inactive";
                           statusColor = "bg-yellow-100 text-yellow-700";
                         }
 
+                        // *****************************************************
+
                         const canEnroll =
-                          isCurrentTerm && !isEnrolled && !isSaving;
+                          isCurrentTerm &&
+                          !isEnrolled &&
+                          !isSaving &&
+                          statusLabel !== "Completed";
 
                         return (
                           <div
@@ -426,7 +442,6 @@ const DashboardUser = () => {
                             className="flex flex-col justify-between rounded-xl border border-gray-100 bg-white p-5 shadow-sm"
                           >
                             <div>
-                              {/* Title + Status */}
                               <div className="mb-2 flex items-center justify-between">
                                 <h5 className="text-sm font-semibold text-gray-900">
                                   {course.title || course.course_title}
@@ -449,17 +464,7 @@ const DashboardUser = () => {
                               </p>
                             </div>
 
-                            {/* Buttons */}
                             <div className="mt-4 flex flex-col gap-2">
-                              <button
-                                className="w-full rounded-lg bg-gray-100 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-200"
-                                onClick={() =>
-                                  navigate(`/course/${course.course_id}`)
-                                }
-                              >
-                                View Course Details
-                              </button>
-
                               <button
                                 disabled={!canEnroll}
                                 className={`w-full rounded-lg py-2 text-xs font-medium transition ${
