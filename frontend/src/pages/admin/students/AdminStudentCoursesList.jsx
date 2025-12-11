@@ -3,24 +3,36 @@ import { useParams, Link } from "react-router-dom";
 import { buildApiUrl } from "../../../api";
 
 const AdminStudentCoursesList = () => {
-  const { id } = useParams(); // studentId
+  const { id } = useParams(); // This is studentId (ST000001)
+
   const [courses, setCourses] = useState([]);
   const [catalog, setCatalog] = useState([]);
+  const [student, setStudent] = useState(null);
 
   useEffect(() => {
     const load = async () => {
       try {
-        // Student courses
+        // Load student courses
         const res = await fetch(
           buildApiUrl("getStudentCourses") + `?studentId=${id}`
         );
         const json = await res.json();
-        setCourses(json.items || json || []);
+        setCourses(json.items || []);
 
-        // Course catalog (titles, etc.)
+        // Load catalog
         const resCatalog = await fetch(buildApiUrl("getCourses"));
         const jsonCatalog = await resCatalog.json();
-        setCatalog(jsonCatalog.items || jsonCatalog || []);
+        setCatalog(jsonCatalog.items || []);
+
+        // Load student info (PHOTO + NAME)
+        const resStudent = await fetch(
+          buildApiUrl("getUserByStudentId") + `?studentId=${id}`
+        );
+        const jsonStudent = await resStudent.json();
+
+        if (jsonStudent?.success) {
+          setStudent(jsonStudent.item);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -34,11 +46,28 @@ const AdminStudentCoursesList = () => {
 
   return (
     <div className="p-8">
-      {/* TITLE */}
-      <h1 className="text-xl font-semibold mb-6">
-        Courses for {id}
-      </h1>
+      {/* TOP HEADER */}
+      <div className="flex items-center gap-4 mb-8">
+        {student?.photo ? (
+          <img
+            src={student.photo}
+            alt="Student"
+            className="w-16 h-16 rounded-full object-cover border shadow-md"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-gray-300 border shadow-md" />
+        )}
 
+        <div>
+          <h1 className="text-2xl font-semibold">
+            {student ? `${student.firstName} ${student.lastName}` : "Loading..."}
+          </h1>
+
+          <p className="text-gray-600 text-sm">Student ID: {id}</p>
+        </div>
+      </div>
+
+      {/* TABLE */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         {courses.length === 0 ? (
           <p className="text-gray-600 text-sm">
@@ -68,9 +97,7 @@ const AdminStudentCoursesList = () => {
                       <span className="font-medium text-gray-900">
                         {full.title || "Unknown course"}
                       </span>
-                      <div className="text-xs text-gray-500">
-                        {full.code}
-                      </div>
+                      <div className="text-xs text-gray-500">{full.code}</div>
                     </td>
 
                     <td className="p-3">{c.term}</td>

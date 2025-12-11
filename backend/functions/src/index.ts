@@ -78,6 +78,8 @@ export { registerStudentCourse } from "./api/registerStudentCourse";
 export { getStudentCourses } from "./api/getStudentCourses";
 export { updateStudentCourseGrade } from "./api/updateStudentCourseGrade";
 
+export { getUserById} from "./api/getUserById";
+export { getUserByStudentId} from "./api/getUserByStudentId";
 
 // ------------------------------------------------------
 // Firestore triggers
