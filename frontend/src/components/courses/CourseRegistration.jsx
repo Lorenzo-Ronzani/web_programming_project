@@ -34,7 +34,9 @@ const CourseRegistration = () => {
 
   const [studentProgram, setStudentProgram] = useState(null);
   const [courses, setCourses] = useState([]);
-  const [registeredCourseIds, setRegisteredCourseIds] = useState([]);
+
+  // Mapa: { [courseId]: "registered" | "completed" }
+  const [studentCourseStatus, setStudentCourseStatus] = useState({});
 
   const [loading, setLoading] = useState(true);
   const [savingCourseId, setSavingCourseId] = useState("");
@@ -131,18 +133,36 @@ const CourseRegistration = () => {
   }, [studentProgram]);
 
   // ------------------------------------------------------------
-  // Load student's registered courses
+  // Load student's course statuses (registered + completed)
   // ------------------------------------------------------------
   const loadStudentCourses = async () => {
     try {
       const res = await fetch(
-        buildApiUrl("getStudentCourses") + `?student_id=${studentId}`
+        buildApiUrl("getStudentCourses") + `?studentId=${studentId}` // FIXED HERE
       );
       const json = await res.json();
 
-      if (json?.success) {
-        setRegisteredCourseIds(json.items.map((c) => c.course_id));
-      }
+      if (!json?.success) return;
+
+      const raw = Array.isArray(json.items) ? json.items : [];
+
+      const map = {};
+
+      raw.forEach((c) => {
+        const courseId =
+          c.course_id ??
+          c.courseId ??
+          (c.course && c.course.id) ??
+          c.id;
+
+        if (!courseId) return;
+
+        const status = c.status ?? "registered";
+
+        map[courseId] = status;
+      });
+
+      setStudentCourseStatus(map);
     } catch (err) {
       console.error(err);
     }
@@ -153,15 +173,16 @@ const CourseRegistration = () => {
   }, [studentId]);
 
   // ------------------------------------------------------------
-  // Register in course (adjusted)
+  // Register in course
   // ------------------------------------------------------------
   const handleRegister = async (course) => {
     resetFeedback();
 
     const id = course.id;
+    const status = studentCourseStatus[id];
 
-    if (registeredCourseIds.includes(id)) {
-      setError("You are already registered in this course.");
+    if (status === "registered" || status === "completed") {
+      setError("You cannot register again for this course.");
       return;
     }
 
@@ -188,10 +209,6 @@ const CourseRegistration = () => {
         return;
       }
 
-      // Atualiza lista local
-      setRegisteredCourseIds((prev) => [...prev, id]);
-
-      // Recarrega dados diretamente do backend
       await loadStudentCourses();
 
       setMessage(`Registered in ${course.title}`);
@@ -237,30 +254,54 @@ const CourseRegistration = () => {
         ) : (
           <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => {
-              const isRegistered = registeredCourseIds.includes(course.id);
+              const status = studentCourseStatus[course.id];
+
+              const isRegistered = status === "registered";
+              const isCompleted = status === "completed";
+
+              const cardClass = isCompleted
+                ? "bg-gray-200 text-gray-800 border border-gray-300"
+                : isRegistered
+                ? "bg-gray-100 text-gray-800 border border-gray-200"
+                : `text-white bg-gradient-to-br ${
+                    COLOR_GRADIENT[course.color] || COLOR_GRADIENT.blue
+                  }`;
+
+              const buttonLabel = isCompleted
+                ? "Completed"
+                : isRegistered
+                ? "Registered"
+                : savingCourseId === course.id
+                ? "Registering..."
+                : "Register";
+
+              const buttonClass = isCompleted
+                ? "bg-gray-400 cursor-not-allowed"
+                : isRegistered
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600";
 
               return (
-<div
-  key={course.id}
-  className={`
-    rounded-2xl shadow-lg p-6 flex flex-col justify-between
-    ${isRegistered 
-      ? "bg-green-200 text-gray-800 border border-gray-200" 
-      : `text-white bg-gradient-to-br ${COLOR_GRADIENT[course.color] || COLOR_GRADIENT.blue}`
-    }
-  `}
->
+                <div
+                  key={course.id}
+                  className={`rounded-2xl shadow-lg p-6 flex flex-col justify-between ${cardClass}`}
+                >
                   <div>
                     <div className="flex items-center gap-3 mb-4">
                       {course.icon && (
                         <span
-                          className="material-symbols-outlined text-4xl drop-shadow-sm"
-                          style={{ color: "rgba(255,255,255,0.85)" }}
+                          className="material-symbols-outlined text-4xl"
+                          style={{
+                            color:
+                              isCompleted || isRegistered
+                                ? "#444"
+                                : "rgba(255,255,255,0.85)",
+                          }}
                         >
                           {course.icon}
                         </span>
                       )}
-                      <h2 className="text-lg font-semibold drop-shadow-md">
+                      <h2 className="text-lg font-semibold">
                         {course.title}
                       </h2>
                     </div>
@@ -268,7 +309,13 @@ const CourseRegistration = () => {
                     <p className="text-sm opacity-90">{course.code}</p>
 
                     <div className="mt-3">
-                      <span className="px-2 py-1 text-xs bg-black/40 rounded-lg backdrop-blur-sm">
+                      <span
+                        className={`px-2 py-1 text-xs rounded-lg ${
+                          isCompleted || isRegistered
+                            ? "bg-gray-300 text-gray-700"
+                            : "bg-black/40 text-white"
+                        }`}
+                      >
                         {course.credits} credits
                       </span>
                     </div>
@@ -276,32 +323,23 @@ const CourseRegistration = () => {
                     <div className="mt-5 flex items-center gap-3">
                       <img
                         src={course.photo}
-                        className="w-11 h-11 rounded-full object-cover border border-white/40 shadow-md"
+                        className="w-11 h-11 rounded-full object-cover border shadow-md"
                         alt="Instructor"
                       />
-                      <p className="text-sm drop-shadow-sm">
+                      <p className="text-sm">
                         Instructor: <b>{course.instructor}</b>
                       </p>
                     </div>
                   </div>
 
                   <button
-                    disabled={isRegistered || savingCourseId === course.id}
+                    disabled={
+                      isRegistered || isCompleted || savingCourseId === course.id
+                    }
                     onClick={() => handleRegister(course)}
-                    className={`
-                      mt-6 w-full py-2 rounded-xl text-sm font-semibold text-white shadow-md 
-                      ${
-                        isRegistered
-                          ? "bg-black/30 cursor-not-allowed"
-                          : "bg-blue-500 hover:bg-blue-600"
-                      }
-                    `}
+                    className={`mt-6 w-full py-2 rounded-xl text-sm font-semibold text-white shadow-md ${buttonClass}`}
                   >
-                    {isRegistered
-                      ? "Registered"
-                      : savingCourseId === course.id
-                      ? "Registering..."
-                      : "Register"}
+                    {buttonLabel}
                   </button>
                 </div>
               );
