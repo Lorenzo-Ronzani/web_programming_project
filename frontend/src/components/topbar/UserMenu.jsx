@@ -56,7 +56,8 @@ function UserMenu() {
       case "student":
         menuItems = [
           { label: "User Dashboard", href: "/dashboarduser" },
-          { label: "Courses Registration", href: "/coursesregistration" },
+          { label: "Programs Registration", href: "/programregistration" },
+          { label: "Courses Registration", href: "/courseregistration" },
           { label: "Settings", href: "/settings" },
           { label: "Logout", action: handleLogout, danger: true },
         ];

@@ -94,7 +94,7 @@ const DashboardUser = () => {
             </p>
             <p className="text-sm text-gray-400">
               Logged in as {user?.firstName} {user?.lastName} (ID:{" "}
-              {user?.student_id})
+              {user?.studentId})
             </p>
           </div>
         </div>
@@ -132,7 +132,7 @@ const DashboardUser = () => {
 
               <button
                 className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
-                onClick={() => navigate("/coursesregistration")}
+                onClick={() => navigate("/courseregistration")}
               >
                 + Add Course
               </button>

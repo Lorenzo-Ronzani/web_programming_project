@@ -1,40 +1,59 @@
-// ------------------------------------------------------
-// getProgramStructureById.ts - Fetch structure by ID
-// ------------------------------------------------------
 import { onRequest } from "firebase-functions/v2/https";
 import { db } from "../config/firebase";
 
 export const getProgramStructureById = onRequest({ cors: true }, async (req: any, res: any) => {
-  if (req.method !== "GET") {
-    return res.status(405).json({ success: false, message: "Only GET allowed" });
-  }
-
   try {
-    const id = req.query.id;
+    if (req.method !== "GET") {
+      return res.status(405).json({
+        success: false,
+        message: "GET only.",
+      });
+    }
+
+    const id = req.query.id as string;
 
     if (!id) {
       return res.status(400).json({
         success: false,
-        message: "Program structure ID is required",
+        message: "Program ID is required.",
       });
     }
 
-    const snap = await db.collection("program_structure").doc(id).get();
+    // 1) tenta buscar por ID do documento
+    let docSnap = await db.collection("program_structure").doc(id).get();
 
-    if (!snap.exists) {
-      return res.status(404).json({ success: false, message: "Structure not found" });
+    // 2) se não existir, tenta buscar por campo program_id
+    if (!docSnap.exists) {
+      const querySnap = await db
+        .collection("program_structure")
+        .where("program_id", "==", id)
+        .limit(1)
+        .get();
+
+      if (!querySnap.empty) {
+        docSnap = querySnap.docs[0];
+      }
+    }
+
+    if (!docSnap.exists) {
+      return res.status(404).json({
+        success: false,
+        message: "Program structure not found.",
+      });
     }
 
     return res.status(200).json({
       success: true,
-      item: { id, ...snap.data() },
+      item: {
+        id: docSnap.id,
+        ...docSnap.data(),
+      },
     });
-
   } catch (error: any) {
     console.error("GET PROGRAM STRUCTURE ERROR:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to fetch structure",
+      message: error.message || "Internal server error.",
     });
   }
 });

@@ -12,11 +12,14 @@ import { AuthProvider } from "./context/AuthContext";
    ================================================ */
 import Home from "./pages/Home";
 import Programs from "./components/programs/Programs";
-import ProgramDetails from "./components/programs/ProgramDetails";
 import ProgramsAll from "./pages/ProgramsAll";
+import ProgramDetails from "./components/programs/ProgramDetails";
+import ProgramRegistration from "./components/programs/ProgramRegistration"
+
 import Courses from "./components/courses/Courses";
 import CoursesAll from "./pages/CoursesAll";
 import CourseDetails from "./components/courses/CourseDetails";
+import CourseRegistration from "./components/courses/CourseRegistration";
 
 import Terms from "./components/terms/Terms";
 import MainContent from "./pages/MainContent";
@@ -29,7 +32,6 @@ import RegisterPage from "./pages/RegisterPage";
    STUDENT AREA
    ================================================ */
 import DashboardUser from "./components/dashboards/DashboardUser";
-import CourseRegistration from "./components/courses/CourseRegistration";
 
 /* ================================================
    ADMIN LAYOUT + DASHBOARD
@@ -158,7 +160,16 @@ function App() {
               />
 
               <Route
-                path="/coursesregistration"
+                path="/programregistration"
+                element={
+                  <ProtectedRoute allowedRoles={["student"]}>
+                    <ProgramRegistration />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/courseregistration"
                 element={
                   <ProtectedRoute allowedRoles={["student"]}>
                     <CourseRegistration />

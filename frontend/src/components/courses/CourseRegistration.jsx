@@ -1,241 +1,312 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../topbar/TopBar";
 import Footer from "../footer/Footer";
 import { useAuth } from "../../context/AuthContext";
 import { buildApiUrl } from "../../api";
 
+// Gradiente suave
+const COLOR_GRADIENT = {
+  blue: "from-blue-500/70 to-blue-500/90",
+  green: "from-green-500/70 to-green-500/90",
+  purple: "from-purple-500/70 to-purple-500/90",
+  yellow: "from-yellow-500/70 to-yellow-500/90",
+  red: "from-red-500/70 to-red-500/90",
+  indigo: "from-indigo-500/70 to-indigo-500/90",
+  cyan: "from-cyan-500/70 to-cyan-500/90",
+  orange: "from-orange-500/70 to-orange-500/90",
+  teal: "from-teal-500/70 to-teal-500/90",
+  pink: "from-pink-500/70 to-pink-500/90",
+  emerald: "from-emerald-500/70 to-emerald-500/90",
+  violet: "from-violet-500/70 to-violet-500/90",
+  rose: "from-rose-500/70 to-rose-500/90",
+  amber: "from-amber-500/70 to-amber-500/90",
+  lime: "from-lime-500/70 to-lime-500/90",
+  slate: "from-slate-500/70 to-slate-500/90",
+  fuchsia: "from-fuchsia-500/70 to-fuchsia-500/90",
+  sky: "from-sky-500/70 to-sky-500/90",
+  stone: "from-stone-500/70 to-stone-500/90",
+  neutral: "from-neutral-500/70 to-neutral-500/90",
+};
+
 const CourseRegistration = () => {
   const { user } = useAuth();
+  const studentId = user?.student_id || user?.studentId || "";
 
-  const [search, setSearch] = useState("");
-  const [term, setTerm] = useState("All");
-  const [programFilter, setProgramFilter] = useState("All");
-
+  const [studentProgram, setStudentProgram] = useState(null);
   const [courses, setCourses] = useState([]);
+  const [registeredCourseIds, setRegisteredCourseIds] = useState([]);
+
   const [loading, setLoading] = useState(true);
+  const [savingCourseId, setSavingCourseId] = useState("");
 
-  // 🔥 Busca cursos do backend (Firebase Functions via API)
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const resetFeedback = () => {
+    setMessage("");
+    setError("");
+  };
+
+  // ------------------------------------------------------------
+  // Load student program
+  // ------------------------------------------------------------
   useEffect(() => {
-    const url = buildApiUrl("getCourses"); // mesmo padrão do componente Courses
+    const loadStudentProgram = async () => {
+      try {
+        const res = await fetch(
+          buildApiUrl("getStudentProgram") + `?student_id=${studentId}`
+        );
+        const json = await res.json();
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched courses (registration):", data);
-        setCourses(data);
-      })
-      .catch((err) => {
-        console.error("Error fetching courses for registration:", err);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+        if (!json?.success || !json.item) {
+          window.location.href = "/programregistration";
+          return;
+        }
 
-  // 🧠 Filtro de cursos (com filtro por program_id)
-  const filteredCourses = courses.filter((c) => {
-    const matchesSearch =
-      c.title.toLowerCase().includes(search.toLowerCase()) ||
-      c.code.toLowerCase().includes(search.toLowerCase());
+        setStudentProgram(json.item);
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-    const matchesTerm = term === "All" || c.term === term;
+    if (studentId) loadStudentProgram();
+  }, [studentId]);
 
-    // 🎯 Filtro por Program ID (1,2,3 vindo do backend)
-    const matchesProgram =
-      programFilter === "All" ||
-      (programFilter === "Diploma" && c.program_id === 1) ||
-      (programFilter === "Post-Diploma" && c.program_id === 2) ||
-      (programFilter === "Certificate" && c.program_id === 3);
+  // ------------------------------------------------------------
+  // Load courses for current term
+  // ------------------------------------------------------------
+  useEffect(() => {
+    const loadCoursesForTerm = async () => {
+      if (!studentProgram) return;
 
-    return matchesSearch && matchesTerm && matchesProgram;
-  });
+      setLoading(true);
+
+      try {
+        const structRes = await fetch(
+          buildApiUrl("getProgramStructureById") +
+            `?id=${studentProgram.program_id}`
+        );
+        const structJson = await structRes.json();
+
+        if (!structJson?.success || !structJson.item?.terms) {
+          setError("Program structure not found.");
+          setCourses([]);
+          setLoading(false);
+          return;
+        }
+
+        const struct = structJson.item;
+        const termLabel = studentProgram.current_term || "Term 1";
+
+        const termEntry =
+          struct.terms.find((t) => t.term === termLabel) || struct.terms[0];
+
+        if (!termEntry?.courses) {
+          setCourses([]);
+          setLoading(false);
+          return;
+        }
+
+        const termCourseIds = termEntry.courses.map((c) => c.course_id);
+
+        const courseRes = await fetch(buildApiUrl("getCourses"));
+        const courseJson = await courseRes.json();
+
+        const allCourses = Array.isArray(courseJson.items)
+          ? courseJson.items
+          : courseJson;
+
+        const filtered = allCourses.filter((c) => termCourseIds.includes(c.id));
+
+        setCourses(filtered);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load courses.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCoursesForTerm();
+  }, [studentProgram]);
+
+  // ------------------------------------------------------------
+  // Load student's registered courses
+  // ------------------------------------------------------------
+  const loadStudentCourses = async () => {
+    try {
+      const res = await fetch(
+        buildApiUrl("getStudentCourses") + `?student_id=${studentId}`
+      );
+      const json = await res.json();
+
+      if (json?.success) {
+        setRegisteredCourseIds(json.items.map((c) => c.course_id));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (studentId) loadStudentCourses();
+  }, [studentId]);
+
+  // ------------------------------------------------------------
+  // Register in course (adjusted)
+  // ------------------------------------------------------------
+  const handleRegister = async (course) => {
+    resetFeedback();
+
+    const id = course.id;
+
+    if (registeredCourseIds.includes(id)) {
+      setError("You are already registered in this course.");
+      return;
+    }
+
+    setSavingCourseId(id);
+
+    try {
+      const payload = {
+        student_id: studentId,
+        program_id: studentProgram.program_id,
+        course_id: id,
+        term: studentProgram.current_term || null,
+      };
+
+      const res = await fetch(buildApiUrl("registerStudentCourse"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+
+      if (!json?.success) {
+        setError(json.message || "Failed to register course.");
+        return;
+      }
+
+      // Atualiza lista local
+      setRegisteredCourseIds((prev) => [...prev, id]);
+
+      // Recarrega dados diretamente do backend
+      await loadStudentCourses();
+
+      setMessage(`Registered in ${course.title}`);
+    } catch (err) {
+      console.error(err);
+      setError("Error registering course.");
+    } finally {
+      setSavingCourseId("");
+    }
+  };
+
+  // ------------------------------------------------------------
+  // UI
+  // ------------------------------------------------------------
+  if (!studentProgram) return <div>Loading program...</div>;
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
       <TopBar />
 
-      <main className="flex-1 container mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="bg-white shadow-md rounded-2xl p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-1">
-            Course Registration
-          </h2>
-          <p className="text-gray-500 text-sm">
-            Showing all available courses in the system.
-          </p>
+      <main className="container mx-auto px-6 py-8 flex-1">
+        <div className="bg-white p-4 rounded-xl shadow mb-6">
+          <h1 className="text-xl font-semibold">
+            {studentProgram.program_title} ({studentProgram.credential})
+          </h1>
+          <p>Term: {studentProgram.current_term}</p>
         </div>
 
-        {/* Se ainda estiver carregando */}
-        {loading ? (
-          <div className="bg-white p-6 rounded-2xl shadow text-center text-gray-600">
-            Loading courses...
+        {message && (
+          <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
+            {message}
           </div>
+        )}
+
+        {error && (
+          <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <p>Loading courses...</p>
         ) : (
-          <>
-            {/* Filters */}
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-8">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <input
-                  type="text"
-                  placeholder="Search courses by name or code..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"
-                />
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {courses.map((course) => {
+              const isRegistered = registeredCourseIds.includes(course.id);
 
-                <div className="flex items-center gap-3">
-                  {/* Program Filter */}
-                  <select
-                    value={programFilter}
-                    onChange={(e) => setProgramFilter(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-2"
-                  >
-                    <option value="All">All Programs</option>
-                    <option value="Diploma">Diploma Programs</option>
-                    <option value="Post-Diploma">
-                      Post-Diploma Certificates
-                    </option>
-                    <option value="Certificate">Certificate Programs</option>
-                  </select>
+              return (
+<div
+  key={course.id}
+  className={`
+    rounded-2xl shadow-lg p-6 flex flex-col justify-between
+    ${isRegistered 
+      ? "bg-green-200 text-gray-800 border border-gray-200" 
+      : `text-white bg-gradient-to-br ${COLOR_GRADIENT[course.color] || COLOR_GRADIENT.blue}`
+    }
+  `}
+>
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      {course.icon && (
+                        <span
+                          className="material-symbols-outlined text-4xl drop-shadow-sm"
+                          style={{ color: "rgba(255,255,255,0.85)" }}
+                        >
+                          {course.icon}
+                        </span>
+                      )}
+                      <h2 className="text-lg font-semibold drop-shadow-md">
+                        {course.title}
+                      </h2>
+                    </div>
 
-                  {/* Term Filter */}
-                  <select
-                    value={term}
-                    onChange={(e) => setTerm(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-2"
+                    <p className="text-sm opacity-90">{course.code}</p>
+
+                    <div className="mt-3">
+                      <span className="px-2 py-1 text-xs bg-black/40 rounded-lg backdrop-blur-sm">
+                        {course.credits} credits
+                      </span>
+                    </div>
+
+                    <div className="mt-5 flex items-center gap-3">
+                      <img
+                        src={course.photo}
+                        className="w-11 h-11 rounded-full object-cover border border-white/40 shadow-md"
+                        alt="Instructor"
+                      />
+                      <p className="text-sm drop-shadow-sm">
+                        Instructor: <b>{course.instructor}</b>
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    disabled={isRegistered || savingCourseId === course.id}
+                    onClick={() => handleRegister(course)}
+                    className={`
+                      mt-6 w-full py-2 rounded-xl text-sm font-semibold text-white shadow-md 
+                      ${
+                        isRegistered
+                          ? "bg-black/30 cursor-not-allowed"
+                          : "bg-blue-500 hover:bg-blue-600"
+                      }
+                    `}
                   >
-                    <option value="All">All Terms</option>
-                    <option value="Fall 2025">Fall 2025</option>
-                    <option value="Winter 2026">Winter 2026</option>
-                    <option value="Spring 2026">Spring 2026</option>
-                  </select>
+                    {isRegistered
+                      ? "Registered"
+                      : savingCourseId === course.id
+                      ? "Registering..."
+                      : "Register"}
+                  </button>
                 </div>
-              </div>
-            </div>
-
-            {/* Courses Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <table className="w-full text-left text-sm text-gray-700">
-                <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-                  <tr>
-                    <th className="px-6 py-3">Course</th>
-                    <th className="px-6 py-3">Program</th>
-                    <th className="px-6 py-3">Instructor</th>
-                    <th className="px-6 py-3">Schedule</th>
-                    <th className="px-6 py-3">Credits</th>
-                    <th className="px-6 py-3">Availability</th>
-                    <th className="px-6 py-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredCourses.length > 0 ? (
-                    filteredCourses.map((course) => (
-                      <tr
-                        key={course.id}
-                        className="border-t hover:bg-gray-50 transition-colors"
-                      >
-                        {/* Course Info */}
-                        <td className="px-6 py-4 font-medium text-gray-800">
-                          <div>
-                            <p className="font-semibold hover:text-blue-600 cursor-pointer">
-                              {course.title}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {course.code}
-                            </p>
-                            <p className="text-xs text-gray-400 italic mt-1">
-                              {course.description}
-                            </p>
-                          </div>
-                        </td>
-
-                        {/* Program */}
-                        <td className="px-6 py-4 text-gray-700">
-                          {course.programTitle}
-                        </td>
-
-                        {/* Instructor */}
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <img
-                              src={course.photo}
-                              alt={course.instructor}
-                              className="w-8 h-8 rounded-full"
-                            />
-                            <span>{course.instructor}</span>
-                          </div>
-                        </td>
-
-                        {/* Schedule */}
-                        <td className="px-6 py-4 text-gray-600">
-                          {course.schedule}
-                        </td>
-
-                        {/* Credits */}
-                        <td className="px-6 py-4">{course.credits}</td>
-
-                        {/* Availability */}
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`${
-                                course.available === 0
-                                  ? "text-red-500"
-                                  : course.available < 10
-                                  ? "text-orange-500"
-                                  : "text-green-600"
-                              } text-sm font-medium`}
-                            >
-                              {course.available}/{course.total} Available
-                            </span>
-                            <div className="w-24 bg-gray-200 rounded-full h-2">
-                              <div
-                                className={`h-2 rounded-full ${
-                                  course.available === 0
-                                    ? "bg-red-500"
-                                    : course.available < 10
-                                    ? "bg-orange-400"
-                                    : "bg-green-500"
-                                }`}
-                                style={{
-                                  width: `${
-                                    (course.available / course.total) * 100
-                                  }%`,
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Action */}
-                        <td className="px-6 py-4 text-right">
-                          {course.available > 0 ? (
-                            <button className="bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm hover:bg-blue-700 transition">
-                              Register
-                            </button>
-                          ) : (
-                            <button
-                              disabled
-                              className="bg-gray-300 text-gray-600 px-3 py-1.5 rounded-md text-sm cursor-not-allowed"
-                            >
-                              Full
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="7"
-                        className="text-center py-6 text-gray-500 italic"
-                      >
-                        No courses found for the selected filters.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </>
+              );
+            })}
+          </div>
         )}
       </main>
 

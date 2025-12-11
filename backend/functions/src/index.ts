@@ -61,11 +61,22 @@ export { updatePublicIntake } from "./api/updatePublicIntake";
 export { deletePublicIntake } from "./api/deletePublicIntake";
 
 
-// COURSES ------------------------------------------------------------------
+// COURSES -----------------------------------------------------------------------------
 export { createCourse } from "./api/createCourse";
 export { getCourseById } from "./api/getCourseById";
 export { updateCourse } from "./api/updateCourse";
 export { deleteCourse } from "./api/deleteCourse";
+
+
+// STUDENTS APIs -----------------------------------------------------------------------
+export { getStudentProgram } from "./api/getStudentProgram";
+export { createStudentProgram } from "./api/createStudentProgram";
+
+// Programs and Courses Registration
+export { registerProgram } from "./api/registerProgram";
+export { registerStudentCourse } from "./api/registerStudentCourse";
+export { getStudentCourses } from "./api/getStudentCourses";
+
 
 
 // ------------------------------------------------------
