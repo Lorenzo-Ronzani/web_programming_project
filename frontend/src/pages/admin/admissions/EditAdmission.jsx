@@ -1,8 +1,3 @@
-// ------------------------------------------------------
-// EditAdmission.jsx
-// Loads admission data for editing and passes requirements as array.
-// ------------------------------------------------------
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdmissionsForm from "./AdmissionsForm";

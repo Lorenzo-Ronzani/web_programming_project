@@ -89,7 +89,7 @@ const AdminStudentCourseEditor = () => {
   // Save the updated grade
     const save = async () => {
     const payload = {
-        id: courseId,   // <-- O backend PRECISA disso
+        id: courseId,  
         numeric_grade: numericGrade,
         letter_grade: letterGrade,
         grade_points: gradePoints,

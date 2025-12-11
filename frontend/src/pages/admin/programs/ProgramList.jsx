@@ -1,8 +1,3 @@
-// ------------------------------------------------------
-// ProgramList.jsx
-// Search + Column Sorting + Consistent UI (same as Intakes)
-// ------------------------------------------------------
-
 import React, { useEffect, useState, useMemo } from "react";
 import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";

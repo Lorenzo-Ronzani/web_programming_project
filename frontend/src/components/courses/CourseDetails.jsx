@@ -101,7 +101,7 @@ const CourseDetails = () => {
                 Face to Face – Synchronous
               </p>
 
-              {/* Example collapsible group */}
+              {/* Example collapsible group - wlomazzi: need automation */}
               <details className="mt-2 cursor-pointer">
                 <summary className="text-gray-700 text-sm font-medium">
                   January 7, 2026 – April 28, 2026

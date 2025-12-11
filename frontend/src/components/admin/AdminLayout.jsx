@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import SidebarAdmin from "./SidebarAdmin";
-import TopBar from "../topbar/TopBar";   // <-- usa o seu TopBar real
+import TopBar from "../topbar/TopBar"; 
 
 
 

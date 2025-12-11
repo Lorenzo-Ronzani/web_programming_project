@@ -1,4 +1,3 @@
-// src/pages/admin/programs/AddProgram.jsx
 import React, { useState } from "react";
 import ProgramForm from "./ProgramForm";
 import { createProgram } from "../../../api/programs";

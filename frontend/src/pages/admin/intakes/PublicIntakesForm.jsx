@@ -1,9 +1,3 @@
-// ------------------------------------------------------
-// PublicIntakesForm.jsx
-// Premium version with searchable Combobox for Add mode
-// and disabled read-only field for Edit mode.
-// ------------------------------------------------------
-
 import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { Combobox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";

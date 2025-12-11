@@ -1,14 +1,3 @@
-// ------------------------------------------------------
-// ProgramStructureForm.jsx
-// Form to create or edit a program structure using
-// real course references (course_id, code, title).
-// - In ADD mode: program selectable via combobox.
-// - In EDIT mode: program is read-only.
-// - Terms are generated dynamically based on
-//   program_length in ADD mode.
-// - Each term uses a tag-style multi-select of courses.
-// ------------------------------------------------------
-
 import React, { useEffect, useMemo, useState } from "react";
 import { Combobox } from "@headlessui/react";
 

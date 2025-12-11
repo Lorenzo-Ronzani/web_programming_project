@@ -1,6 +1,3 @@
-// ------------------------------------------------------
-// AdmissionsList.jsx - Improved with sorting + better program display
-// ------------------------------------------------------
 import React, { useEffect, useState, useMemo } from "react";
 import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";

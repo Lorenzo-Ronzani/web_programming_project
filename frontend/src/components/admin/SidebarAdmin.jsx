@@ -15,10 +15,6 @@ import {
 /*
   SidebarAdmin
   -----------------------------------------------------
-  - Modern, compact, professional
-  - Icons for better navigation
-  - Active state highlighting
-  - Logical grouping of menu sections
 */
 
 const SidebarAdmin = () => {

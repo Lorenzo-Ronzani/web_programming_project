@@ -4,14 +4,6 @@ import TopBar from "../topbar/TopBar";
 import Footer from "../footer/Footer";
 import { buildApiUrl } from "../../api";
 
-/*
-  CourseEdit.jsx
-  -----------------------------------
-  - Unified Add/Edit Course form
-  - Now loads data from backend (getCourses API) instead of courses.json
-  - Auto-populates when editing an existing course (matched by "code")
-*/
-
 const CourseEdit = () => {
   const { code } = useParams();
   const navigate = useNavigate();
@@ -42,7 +34,7 @@ const CourseEdit = () => {
     tuition_fee: "",
   });
 
-  // 🔥 Load existing course if editing (from backend API, not JSON)
+  // Load existing course if editing (from backend API, not JSON)
   useEffect(() => {
     if (!isEditMode) return;
 
@@ -58,7 +50,6 @@ const CourseEdit = () => {
         if (foundCourse) {
           setCourse({
             ...foundCourse,
-            // Garante que program_id seja string para casar com o <select>
             program_id: foundCourse.program_id
               ? String(foundCourse.program_id)
               : "",
@@ -102,7 +93,7 @@ const CourseEdit = () => {
     }));
   };
 
-  // Save or Add Course (mock – ainda não chama API)
+  // Save or Add Course 
   const handleSave = (e) => {
     e.preventDefault();
 

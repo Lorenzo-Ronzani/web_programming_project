@@ -98,7 +98,7 @@ const UserForm = () => {
     }));
   };
 
-  // (Future: send to backend — for now only navigate + alert)
+  // wlomazzi: ==> Future: send to backend — for now only navigate + alert)
   const handleSubmit = (e) => {
     e.preventDefault();
 

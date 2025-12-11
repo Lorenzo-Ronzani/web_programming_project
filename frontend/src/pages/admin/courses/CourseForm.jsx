@@ -1,4 +1,3 @@
-// src/pages/admin/courses/CourseForm.jsx
 import React, { useState, useEffect } from "react";
 
 export default function CourseForm({ initialData = null, onSubmit }) {

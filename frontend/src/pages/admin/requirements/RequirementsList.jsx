@@ -1,8 +1,3 @@
-// ------------------------------------------------------
-// RequirementsList.jsx - Matching IntakesList visual pattern
-// Search + Sorting + DisplayName
-// ------------------------------------------------------
-
 import React, { useEffect, useState, useMemo } from "react";
 import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";

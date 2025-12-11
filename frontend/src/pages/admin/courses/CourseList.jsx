@@ -1,5 +1,3 @@
-// src/pages/admin/courses/CourseList.jsx
-
 import React, { useEffect, useState, useMemo } from "react";
 import { getCourses, deleteCourse } from "../../../api/courses";
 import { Link } from "react-router-dom";

@@ -1,14 +1,3 @@
-// ------------------------------------------------------
-// RequirementsForm.jsx
-// Premium form used for both Add and Edit requirements.
-// Program selection:
-//   - Add mode  => Combobox search
-//   - Edit mode => Disabled input with displayName
-// Software tools:
-//   - Stored as array in Firestore
-//   - Displayed as textarea with one item per line
-// ------------------------------------------------------
-
 import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { Combobox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";

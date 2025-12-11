@@ -17,7 +17,6 @@ export default function EditCourse() {
         const result = await getCourseById(id);
 
         if (result && result.success && result.item) {
-          // result.item já deve vir com o campo id do backend
           setInitialData(result.item);
         } else {
           setMessage("Failed to load course.");
@@ -35,7 +34,6 @@ export default function EditCourse() {
 
   const handleSubmit = async (formData) => {
     try {
-      // ✔ aqui está a correção: passa id e formData separadamente
       const result = await updateCourse(id, formData);
 
       if (result && result.success) {

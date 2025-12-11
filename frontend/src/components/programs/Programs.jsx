@@ -1,6 +1,3 @@
-// ------------------------------------------------------
-// Programs.jsx (Enhanced - Active Intakes + Multiple Starts)
-// ------------------------------------------------------
 import { useEffect, useState } from "react";
 import { buildApiUrl } from "../../api";
 import { Link } from "react-router-dom";

@@ -1,4 +1,3 @@
-// src/pages/admin/programs/ProgramForm.jsx
 import React, { useState, useEffect } from "react";
 
 const ProgramForm = ({ initialData, onSubmit }) => {
@@ -13,7 +12,7 @@ const ProgramForm = ({ initialData, onSubmit }) => {
     icon: "",
     duration: "",
     description: "",
-    about: "",            // NEW FIELD
+    about: "", 
   });
 
   // Load initial data when editing
@@ -63,7 +62,7 @@ const ProgramForm = ({ initialData, onSubmit }) => {
       icon: form.icon,
       duration: form.duration,
       description: form.description,
-      about: form.about,    // SUBMIT NEW FIELD
+      about: form.about,  
     };
 
     onSubmit(payload);
@@ -230,7 +229,7 @@ const ProgramForm = ({ initialData, onSubmit }) => {
           />
         </div>
 
-        {/* About (NEW FIELD) */}
+        {/* About */}
         <div>
           <label className="block font-semibold mb-1">About</label>
           <textarea

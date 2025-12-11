@@ -3,15 +3,6 @@ import { ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-/*
-  UserMenu Component
-  ---------------------
-  - Displays user avatar, name, and role
-  - Menu dynamically changes based on the user's role
-  - Unified route for Settings (/settings)
-  - Clean, role-based navigation with logout
-*/
-
 function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -32,14 +23,14 @@ function UserMenu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ Logout and redirect
+  // Logout and redirect
   const handleLogout = () => {
     logout();
     setIsOpen(false);
     navigate("/");
   };
 
-  // ✅ Define menu items dynamically
+  // Define menu items dynamically
   let menuItems = [];
 
   if (user) {

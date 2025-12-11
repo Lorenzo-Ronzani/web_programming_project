@@ -1,10 +1,3 @@
-// ------------------------------------------------------
-// EditProgramStructure.jsx
-// Loads programs, courses, and the existing program
-// structure, then passes them to ProgramStructureForm.
-// The program selection is read-only in Edit mode.
-// ------------------------------------------------------
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ProgramStructureForm from "./ProgramStructureForm";

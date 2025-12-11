@@ -19,7 +19,7 @@ import {
 import { buildApiUrl } from "../api";
 
 /*
-  Authentication Context
+  Authentication Context: wlomazzi
   ----------------------------------------------------
   Provides:
     - Firebase login (Email/Password and Google OAuth)
@@ -140,15 +140,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   /*
-    Google login (disabled on localhost)
+    Google login 
   */
   const loginWithGoogle = async () => {
-    /*if (window.location.hostname === "localhost") {
-      return {
-        success: false,
-        message: "Google login is disabled in development environment.",
-      };
-    }*/
 
     try {
       const provider = new GoogleAuthProvider();

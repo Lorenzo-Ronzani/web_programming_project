@@ -19,11 +19,7 @@ const AdminStudentCourses = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // ------------------------------------------------------------
-  // Load all students from the backend
-  // Backend structure matches DashboardAdmin.jsx:
-  // getUsers may return { items: [...] } or directly [ ... ]
-  // ------------------------------------------------------------
+  
   useEffect(() => {
     const loadStudents = async () => {
       try {

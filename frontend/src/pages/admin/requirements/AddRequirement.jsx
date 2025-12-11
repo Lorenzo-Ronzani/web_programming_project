@@ -1,9 +1,3 @@
-// ------------------------------------------------------
-// AddRequirement.jsx
-// Premium Add Form with Combobox search for Programs.
-// Consistent with Admissions, Tuition, Structure, Intakes.
-// ------------------------------------------------------
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";

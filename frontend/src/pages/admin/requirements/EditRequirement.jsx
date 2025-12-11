@@ -1,10 +1,3 @@
-// ------------------------------------------------------
-// EditRequirement.jsx
-// Loads requirement by ID, loads programs with displayName,
-// passes everything to RequirementsForm in Edit mode.
-// Program field is locked (read-only) inside the form.
-// ------------------------------------------------------
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
