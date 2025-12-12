@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TopBar from "../../components/topbar/TopBar";
 import Footer from "../../components/footer/Footer";
 import { useAuth } from "../../context/AuthContext";
@@ -6,6 +7,7 @@ import { buildApiUrl } from "../../api";
 
 const Contact = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -50,9 +52,17 @@ const Contact = () => {
       if (!json.success) {
         setError(json.message || "Failed to send message.");
       } else {
-        setSuccess("Your message has been sent successfully.");
+        setSuccess(
+          "Your message has been sent successfully. You will be redirected to your messages shortly."
+        );
+
         setSubject("");
         setMessage("");
+
+        // Redirect to MessageList after 5 seconds
+        setTimeout(() => {
+          navigate("/messages");
+        }, 3000);
       }
     } catch (err) {
       console.error(err);
@@ -68,6 +78,7 @@ const Contact = () => {
 
       <main className="flex-1 flex justify-center items-start px-6 py-12">
         <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 p-10">
+          {/* HEADER */}
           <div className="flex items-center gap-3 mb-8">
             <span className="material-symbols-outlined text-4xl text-indigo-600">
               support_agent
@@ -78,16 +89,19 @@ const Contact = () => {
           </div>
 
           <p className="text-gray-600 mb-8 text-sm leading-relaxed">
-            If you have questions, issues, or need assistance, send us a message below.
-            Our administration team will get back to you as soon as possible.
+            If you have questions, issues, or need assistance, send us a message
+            below. Our administration team will get back to you as soon as
+            possible.
           </p>
 
+          {/* SUCCESS */}
           {success && (
             <div className="bg-green-100 text-green-700 p-3 rounded-md mb-4 border border-green-300">
               {success}
             </div>
           )}
 
+          {/* ERROR */}
           {error && (
             <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4 border border-red-300">
               {error}
@@ -102,7 +116,10 @@ const Contact = () => {
               </label>
               <input
                 type="text"
-                value={user?.displayName || `${user?.firstName} ${user?.lastName}`}
+                value={
+                  user?.displayName ||
+                  `${user?.firstName} ${user?.lastName}`
+                }
                 readOnly
                 className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-not-allowed text-gray-600 shadow-sm"
               />
@@ -149,7 +166,7 @@ const Contact = () => {
               />
             </div>
 
-            {/* SUBMIT BUTTON */}
+            {/* SUBMIT */}
             <button
               type="submit"
               disabled={loading}
