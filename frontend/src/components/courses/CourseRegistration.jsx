@@ -34,9 +34,8 @@ const CourseRegistration = () => {
 
   const [studentProgram, setStudentProgram] = useState(null);
   const [courses, setCourses] = useState([]);
-
-  // Mapa: { [courseId]: "registered" | "completed" }
   const [studentCourseStatus, setStudentCourseStatus] = useState({});
+  const [studentCourseData, setStudentCourseData] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [savingCourseId, setSavingCourseId] = useState("");
@@ -49,9 +48,7 @@ const CourseRegistration = () => {
     setError("");
   };
 
-  // ------------------------------------------------------------
-  // Load student program
-  // ------------------------------------------------------------
+  // ------------------------------ Load student program
   useEffect(() => {
     const loadStudentProgram = async () => {
       try {
@@ -74,9 +71,7 @@ const CourseRegistration = () => {
     if (studentId) loadStudentProgram();
   }, [studentId]);
 
-  // ------------------------------------------------------------
-  // Load courses for current term
-  // ------------------------------------------------------------
+  // ------------------------------ Load courses for term
   useEffect(() => {
     const loadCoursesForTerm = async () => {
       if (!studentProgram) return;
@@ -118,7 +113,9 @@ const CourseRegistration = () => {
           ? courseJson.items
           : courseJson;
 
-        const filtered = allCourses.filter((c) => termCourseIds.includes(c.id));
+        const filtered = allCourses.filter((c) =>
+          termCourseIds.includes(c.id)
+        );
 
         setCourses(filtered);
       } catch (err) {
@@ -132,13 +129,11 @@ const CourseRegistration = () => {
     loadCoursesForTerm();
   }, [studentProgram]);
 
-  // ------------------------------------------------------------
-  // Load student's course statuses (registered + completed)
-  // ------------------------------------------------------------
+  // ------------------------------ Load student's registered courses
   const loadStudentCourses = async () => {
     try {
       const res = await fetch(
-        buildApiUrl("getStudentCourses") + `?studentId=${studentId}` // FIXED HERE
+        buildApiUrl("getStudentCourses") + `?studentId=${studentId}`
       );
       const json = await res.json();
 
@@ -146,23 +141,17 @@ const CourseRegistration = () => {
 
       const raw = Array.isArray(json.items) ? json.items : [];
 
-      const map = {};
+      const statusMap = {};
+      const dataMap = {};
 
       raw.forEach((c) => {
-        const courseId =
-          c.course_id ??
-          c.courseId ??
-          (c.course && c.course.id) ??
-          c.id;
-
-        if (!courseId) return;
-
-        const status = c.status ?? "registered";
-
-        map[courseId] = status;
+        const courseId = c.course_id;
+        statusMap[courseId] = c.status;
+        dataMap[courseId] = c; // store entire record
       });
 
-      setStudentCourseStatus(map);
+      setStudentCourseStatus(statusMap);
+      setStudentCourseData(dataMap);
     } catch (err) {
       console.error(err);
     }
@@ -172,9 +161,7 @@ const CourseRegistration = () => {
     if (studentId) loadStudentCourses();
   }, [studentId]);
 
-  // ------------------------------------------------------------
-  // Register in course
-  // ------------------------------------------------------------
+  // ------------------------------ REGISTER
   const handleRegister = async (course) => {
     resetFeedback();
 
@@ -220,9 +207,34 @@ const CourseRegistration = () => {
     }
   };
 
-  // ------------------------------------------------------------
-  // UI
-  // ------------------------------------------------------------
+  // ------------------------------ UNENROLL (using deleteStudentCourses API)
+  const handleUnenroll = async (courseUserId, courseTitle) => {
+    if (!window.confirm(`Unenroll from ${courseTitle}?`)) return;
+
+    try {
+      const res = await fetch(
+        buildApiUrl("deleteStudentCourses") + `?id=${courseUserId}`,
+        { method: "DELETE" }
+      );
+
+      const json = await res.json();
+
+      if (!json.success) {
+        alert(json.message);
+        return;
+      }
+
+      // Remove the courseUser entry from local state
+      await loadStudentCourses();
+
+      setMessage(`You have been unenrolled from ${courseTitle}`);
+    } catch (err) {
+      console.error(err);
+      alert("Error trying to unenroll.");
+    }
+  };
+
+  // ------------------------------ UI
   if (!studentProgram) return <div>Loading program...</div>;
 
   return (
@@ -255,6 +267,12 @@ const CourseRegistration = () => {
           <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => {
               const status = studentCourseStatus[course.id];
+              const courseData = studentCourseData[course.id];
+
+              const hasGrade =
+                courseData?.numeric_grade ||
+                courseData?.letter_grade ||
+                courseData?.grade_points;
 
               const isRegistered = status === "registered";
               const isCompleted = status === "completed";
@@ -264,22 +282,34 @@ const CourseRegistration = () => {
                 : isRegistered
                 ? "bg-gray-100 text-gray-800 border border-gray-200"
                 : `text-white bg-gradient-to-br ${
-                    COLOR_GRADIENT[course.color] || COLOR_GRADIENT.blue
+                    COLOR_GRADIENT[course.color] ||
+                    COLOR_GRADIENT.blue
                   }`;
 
-              const buttonLabel = isCompleted
-                ? "Completed"
-                : isRegistered
-                ? "Registered"
-                : savingCourseId === course.id
-                ? "Registering..."
-                : "Register";
+              // BUTTON DECISION:
+              let buttonLabel = "Register";
+              let buttonClass =
+                "bg-blue-500 hover:bg-blue-600 text-white";
 
-              const buttonClass = isCompleted
-                ? "bg-gray-400 cursor-not-allowed"
-                : isRegistered
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600";
+              let action = () => handleRegister(course);
+
+              if (isCompleted) {
+                buttonLabel = "Completed";
+                buttonClass = "bg-gray-400 cursor-not-allowed";
+                action = null;
+              } else if (isRegistered) {
+                if (!hasGrade) {
+                  buttonLabel = "Unenroll";
+                  buttonClass =
+                    "bg-red-500 hover:bg-red-600 text-white";
+                  action = () =>
+                    handleUnenroll(courseData.id, course.title);
+                } else {
+                  buttonLabel = "Registered";
+                  buttonClass = "bg-gray-500 cursor-not-allowed";
+                  action = null;
+                }
+              }
 
               return (
                 <div
@@ -333,13 +363,13 @@ const CourseRegistration = () => {
                   </div>
 
                   <button
-                    disabled={
-                      isRegistered || isCompleted || savingCourseId === course.id
-                    }
-                    onClick={() => handleRegister(course)}
-                    className={`mt-6 w-full py-2 rounded-xl text-sm font-semibold text-white shadow-md ${buttonClass}`}
+                    disabled={!action || savingCourseId === course.id}
+                    onClick={action}
+                    className={`mt-6 w-full py-2 rounded-xl text-sm font-semibold shadow-md ${buttonClass}`}
                   >
-                    {buttonLabel}
+                    {savingCourseId === course.id
+                      ? "Processing..."
+                      : buttonLabel}
                   </button>
                 </div>
               );

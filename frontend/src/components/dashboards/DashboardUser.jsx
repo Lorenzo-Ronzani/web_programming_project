@@ -22,6 +22,18 @@ const DashboardUser = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const [messages, setMessages] = useState([]);
+
+  const safeMessages = Array.isArray(messages) ? messages : [];
+
+  const totalMessages = safeMessages.length;
+  const pendingMessages = safeMessages.filter(
+    (m) => m?.status === "unread"
+  ).length;
+  const answeredMessages = safeMessages.filter(
+    (m) => m?.status === "answered"
+  ).length;
+
   const resetFeedback = () => {
     setMessage("");
     setError("");
@@ -113,6 +125,31 @@ const DashboardUser = () => {
 
     loadDashboardData();
   }, [studentProgram, studentId]);
+
+
+  // LOAD SUPPORT MESSAGES
+  useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        const res = await fetch(
+          buildApiUrl("getStudentMessages") + `?studentId=${studentId}`
+        );
+        const json = await res.json();
+        //if (json.success) setMessages(json.items || []);
+        if (json.success && Array.isArray(json.items)) {
+          setMessages(json.items);
+        } else {
+          setMessages([]);
+        }
+      } catch (err) {
+        console.error("Error loading messages:", err);
+      }
+    };
+
+  if (studentId) loadMessages();
+}, [studentId]);
+
+
 
   // --------------------------------------------------------------------------
   // Derived Data
@@ -324,7 +361,7 @@ const DashboardUser = () => {
               Academic Overview
             </h3>
 
-            <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-4">
+            <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-5">
               <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
                 <h4 className="text-2xl font-bold">{overview.totalCredits}</h4>
                 <p className="text-sm text-gray-500">Total Credits</p>
@@ -361,6 +398,37 @@ const DashboardUser = () => {
                   ></div>
                 </div>
               </div>
+
+              {/* SUPPORT MESSAGES BOX */}
+              <div
+                onClick={() => navigate("/messages")}
+                className="cursor-pointer rounded-xl border border-indigo-200 bg-indigo-50 p-6 shadow-sm hover:shadow-md transition"
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-semibold text-indigo-700">Support Messages</h4>
+                  <span className="material-symbols-outlined text-indigo-600 text-3xl">
+                    support_agent
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 text-center">
+                  <div>
+                    <p className="text-xl font-bold">{totalMessages}</p>
+                    <p className="text-xs text-gray-500">Total</p>
+                  </div>
+
+                  <div>
+                    <p className="text-xl font-bold text-yellow-600">{pendingMessages}</p>
+                    <p className="text-xs text-gray-500">Pending</p>
+                  </div>
+
+                  <div>
+                    <p className="text-xl font-bold text-green-600">{answeredMessages}</p>
+                    <p className="text-xs text-gray-500">Answered</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
             {/* Program Structure */}

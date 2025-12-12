@@ -48,6 +48,7 @@ function UserMenu() {
           { label: "User Dashboard", href: "/dashboarduser" },
           { label: "Programs Registration", href: "/programregistration" },
           { label: "Courses Registration", href: "/courseregistration" },
+          { label: "Contact", href: "/contact" },
           { label: "Settings", href: "/settings" },
           { label: "Logout", action: handleLogout, danger: true },
         ];

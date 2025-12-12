@@ -395,6 +395,14 @@ const DashboardAdmin = () => {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Support Messages (Admin)
+  const [adminMessageCounts, setAdminMessageCounts] = useState({
+    total: 0,
+    pending: 0,
+    answered: 0,
+  });
+
+
   useEffect(() => {
     async function load() {
       try {
@@ -464,6 +472,36 @@ const DashboardAdmin = () => {
     return Math.round(sum / progressList.length);
   })();
 
+
+
+  const loadMessages = async () => {
+    try {
+      const res = await fetch(buildApiUrl("getAllMessages"));
+      const json = await res.json();
+
+      if (json.success && Array.isArray(json.items)) {
+        const messages = json.items;
+
+        const total = messages.length;
+        const pending = messages.filter(
+          (m) => m.status === "unread"
+        ).length;
+        const answered = messages.filter(
+          (m) => m.status === "answered"
+        ).length;
+
+        setAdminMessageCounts({ total, pending, answered });
+      }
+    } catch (err) {
+      console.error("Failed to load admin messages", err);
+    }
+  };
+
+  useEffect(() => {
+    loadMessages();
+  }, []);    
+
+
   if (loading) {
     return <div className="p-10 text-center text-gray-500">Loading dashboard...</div>;
   }
@@ -476,12 +514,51 @@ const DashboardAdmin = () => {
         {currentUser?.email && <p className="mt-1 text-xs text-gray-400">Logged in as {currentUser.email}</p>}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-10">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6 mb-10">
         <StatCard label="Total Students" value={totalStudents} helper="Active students in the system." />
         <StatCard label="Programs" value={totalPrograms} helper="Available programs." />
         <StatCard label="Courses Offered" value={totalCourses} helper="Courses registered in the system." />
         <StatCard label="Enrollments" value={totalEnrollments} helper="Total course enrollments." />
         <StatCard label="Avg Progress" value={`${avgProgress}%`} helper="Average student progress." />
+
+        {/* Support Messages */}
+        <div
+          onClick={() => navigate("/dashboardadmin/messages")}
+          className="cursor-pointer rounded-xl border border-blue-200 bg-blue-50 p-5 shadow-sm hover:shadow-md transition"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-blue-600">
+              Support Messages
+            </h3>
+            <span className="material-symbols-outlined text-blue-500">
+              support_agent
+            </span>
+          </div>
+
+          <div className="flex justify-between text-center">
+            <div>
+              <div className="text-2xl font-bold text-gray-900">
+                {adminMessageCounts.total}
+              </div>
+              <div className="text-xs text-gray-500">Total</div>
+            </div>
+
+            <div>
+              <div className="text-2xl font-bold text-yellow-500">
+                {adminMessageCounts.pending}
+              </div>
+              <div className="text-xs text-gray-500">Pending</div>
+            </div>
+
+            <div>
+              <div className="text-2xl font-bold text-green-600">
+                {adminMessageCounts.answered}
+              </div>
+              <div className="text-xs text-gray-500">Answered</div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <ProgramsTable programs={programs} navigate={navigate} />

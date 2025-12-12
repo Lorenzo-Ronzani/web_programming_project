@@ -73,6 +73,10 @@ export { deleteCourse } from "./api/deleteCourse";
 // STUDENTS APIs -----------------------------------------------------------------------
 export { getStudentProgram } from "./api/getStudentProgram";
 export { createStudentProgram } from "./api/createStudentProgram";
+export { submitContactForm } from "./api/submitContactForm";
+export { getStudentMessages } from "./api/getStudentMessages";
+export { getAllMessages } from "./api/getAllMessages";
+export { updateMessageStatus } from "./api/updateMessageStatus";
 
 // Programs and Courses Registration
 export { registerProgram } from "./api/registerProgram";

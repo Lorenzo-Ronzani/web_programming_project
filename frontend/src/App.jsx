@@ -20,6 +20,8 @@ import Courses from "./components/courses/Courses";
 import CoursesAll from "./pages/CoursesAll";
 import CourseDetails from "./components/courses/CourseDetails";
 import CourseRegistration from "./components/courses/CourseRegistration";
+import Contact from "./components/users/Contact";
+import MessageList from "./components/users/MessageList";
 
 import Terms from "./components/terms/Terms";
 import MainContent from "./pages/MainContent";
@@ -56,6 +58,12 @@ import Settings from "./components/users/Settings";
    AUTH ROUTE PROTECTION
    ================================================ */
 import ProtectedRoute from "./components/routes/ProtectedRoute";
+
+
+/* ================================================
+   ADMIN — MESSAGES
+   ================================================ */
+import AdminMessages from "./components/admin/AdminMessages";
 
 /* ================================================
    ADMIN — PROGRAMS
@@ -186,6 +194,24 @@ function App() {
                 }
               />
 
+              <Route
+                path="/contact"
+                element={
+                  <ProtectedRoute allowedRoles={["student"]}>
+                    <Contact />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/messages"
+                element={
+                  <ProtectedRoute allowedRoles={["student"]}>
+                    <MessageList />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* ========================================
                  ADMIN AREA 
                  ======================================== */}
@@ -200,6 +226,10 @@ function App() {
 
                 {/* Default admin dashboard */}
                 <Route index element={<DashboardAdmin />} />
+
+
+                {/* ADMIN — MESSAGES */}
+                <Route path="messages" element={<AdminMessages />} />
 
                 {/* ADMIN — PROGRAMS */}
                 <Route path="programs" element={<ProgramList />} />
