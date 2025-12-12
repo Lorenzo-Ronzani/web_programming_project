@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { buildApiUrl } from "../../../api";
 
 const AdminStudentCoursesList = () => {
   const { id } = useParams(); // This is studentId (ST000001)
+  const navigate = useNavigate();
 
   const [courses, setCourses] = useState([]);
   const [catalog, setCatalog] = useState([]);
@@ -43,6 +44,34 @@ const AdminStudentCoursesList = () => {
 
   const resolveCourse = (cid) =>
     catalog.find((c) => c.id === cid) || {};
+
+  // ============================================================
+  // DELETE STUDENT COURSE REGISTRATION
+  // ============================================================
+  const handleDeleteCourseUser = async (courseUserId) => {
+    if (!window.confirm("Are you sure you want to remove this course?")) return;
+
+    try {
+      const response = await fetch(
+        buildApiUrl("deleteStudentCourses") + `?id=${courseUserId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete course for student");
+      }
+
+      // Remove from UI
+      setCourses((prev) => prev.filter((c) => c.id !== courseUserId));
+
+      alert("Course removed successfully.");
+    } catch (err) {
+      console.error(err);
+      alert("Error removing course.");
+    }
+  };
 
   return (
     <div className="p-8">
@@ -116,13 +145,24 @@ const AdminStudentCoursesList = () => {
                       </span>
                     </td>
 
-                    <td className="p-3">
-                      <Link
-                        to={`/dashboardadmin/students/${id}/${c.id}`}
-                        className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
+                    <td className="p-3 space-x-4">
+                      {/* EDIT GRADE */}
+                      <button
+                        onClick={() =>
+                          navigate(`/dashboardadmin/students/${id}/${c.id}`)
+                        }
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                       >
                         Edit Grade
-                      </Link>
+                      </button>
+
+                      {/* DELETE BUTTON */}
+                      <button
+                        onClick={() => handleDeleteCourseUser(c.id)}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 );

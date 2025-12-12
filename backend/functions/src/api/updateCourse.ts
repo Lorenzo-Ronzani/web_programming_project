@@ -14,11 +14,11 @@ export const updateCourse = onRequest({ cors: true }, async (req: any, res: any)
     }
 
     const payload = {
-      code: data.code,                       // AGORA ATUALIZA
+      code: data.code, 
       title: data.title,
       instructor: data.instructor || "",
       photo: data.photo || "",
-      details: data.details || "",           // NOVO CAMPO
+      details: data.details || "",
       color: data.color || "indigo",
       icon: data.icon || "school",
       credits: Number(data.credits || 0),

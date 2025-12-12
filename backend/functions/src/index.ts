@@ -16,6 +16,8 @@ export { loginUser } from "./api/loginUser";
 export { getCourses } from "./api/getCourses";
 export { getUsers } from "./api/getUsers";
 export { getCoursesUsers } from "./api/getCoursesUsers";
+export { updateUserProfileAdmin } from "./api/updateUserProfileAdmin";
+
 
 
 // Programs APIs ------------------------------------------------------------------------
@@ -77,6 +79,7 @@ export { registerProgram } from "./api/registerProgram";
 export { registerStudentCourse } from "./api/registerStudentCourse";
 export { getStudentCourses } from "./api/getStudentCourses";
 export { updateStudentCourseGrade } from "./api/updateStudentCourseGrade";
+export { deleteStudentCourses } from "./api/deleteStudentCourses";
 
 export { getUserById} from "./api/getUserById";
 export { getUserByStudentId} from "./api/getUserByStudentId";

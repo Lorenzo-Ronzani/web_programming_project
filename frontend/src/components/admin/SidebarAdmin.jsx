@@ -133,7 +133,6 @@ const SidebarAdmin = () => {
         Students
       </div>
 
-      {/*
       <NavLink
         to="/dashboardadmin/students"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
@@ -142,20 +141,17 @@ const SidebarAdmin = () => {
         List Students
       </NavLink>
 
+      {/* SECTION: USERS */}
+      <div className="mt-6 mb-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">
+        Users
+      </div>
+
       <NavLink
-        to="/dashboardadmin/students/add"
-        className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
-      >
-        <UserPlus size={18} />
-        Add Student
-      </NavLink>
-      */}
-      <NavLink
-        to="/dashboardadmin/students"
+        to="/manageusers"
         className={({ isActive }) => (isActive ? activeStyle : menuItemStyle)}
       >
         <UserRound size={18} />
-        List Students
+        Manage Users
       </NavLink>
 
     </div>

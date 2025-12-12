@@ -1,6 +1,3 @@
-// ------------------------------------------------------
-// getProgramStructure.ts - List all program structures
-// ------------------------------------------------------
 import { onRequest } from "firebase-functions/v2/https";
 import { db } from "../config/firebase";
 

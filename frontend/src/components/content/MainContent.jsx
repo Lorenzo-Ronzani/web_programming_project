@@ -52,10 +52,11 @@ function Header() {
                   type='button'>
                   Explore Courses
                 </button>
-
+                {/*
                 <button className='w-35 cursor-pointer rounded-md border-2 border-solid border-white p-2 font-medium text-white duration-300 hover:scale-110 hover:bg-white hover:text-black' type='button'>
                   Register Now
                 </button>
+                 */}
               </div>
             </div>
 

@@ -4,117 +4,125 @@ import TopBar from "../topbar/TopBar";
 import Footer from "../footer/Footer";
 import { buildApiUrl } from "../../api";
 
-/*
-  UserForm.jsx (API Version)
-  ----------------------------------
-  - Loads users and courses from backend API
-  - Supports edit mode by loading user via student_id or id
-  - Allows admin to assign a program
-*/
-
 const UserForm = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // studentId
   const navigate = useNavigate();
 
-  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const [user, setUser] = useState({
-    id: "",
-    student_id: "",
-    username: "",
-    password: "",
+  // Form Data (same as Settings page)
+  const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    photo: "",
+    phone: "",
+    addressNumber: "",
+    streetName: "",
+    city: "",
+    province: "",
+    postalCode: "",
+    photo: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
     role: "student",
-    status: "active",
-    program: "",
-    program_id: "",
-    programTitle: "",
-    enrollmentDate: "",
   });
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [preview, setPreview] = useState(formData.photo);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
-  // Load courses and user (if editing)
+  // Load user data on mount
   useEffect(() => {
-    const loadData = async () => {
+    const loadUser = async () => {
       try {
-        // Load courses
-        const coursesRes = await fetch(buildApiUrl("getCourses"));
-        const coursesData = await coursesRes.json();
-        setCourses(coursesData);
+        const res = await fetch(buildApiUrl("getUsers"));
+        const allUsers = await res.json();
 
-        // If editing → load user
-        if (id) {
-          const usersRes = await fetch(buildApiUrl("getUsers"));
-          const usersData = await usersRes.json();
+        const user = allUsers.find((u) => u.studentId === id);
+        if (user) {
+          setFormData({
+            firstName: user.firstName || "",
+            lastName: user.lastName || "",
+            email: user.username || user.email || "",
+            phone: user.phone || "",
+            addressNumber: user.addressNumber || "",
+            streetName: user.streetName || "",
+            city: user.city || "",
+            province: user.province || "",
+            postalCode: user.postalCode || "",
+            photo: user.photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+            role: user.role || "student",
+          });
 
-          const foundUser = usersData.find(
-            (u) => u.student_id === id || String(u.id) === id
+          setPreview(
+            user.photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png"
           );
-
-          if (foundUser) {
-            setUser(foundUser);
-            setIsEditMode(true);
-          }
         }
       } catch (err) {
-        console.error("Error loading UserForm data:", err);
+        console.error("Error loading user:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
+    loadUser();
   }, [id]);
+
+  // =============================== HANDLERS ===============================
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUser((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Program change using API course list
-  const handleProgramChange = (e) => {
-    const selectedId = Number(e.target.value);
-    const selectedCourse = courses.find((c) => c.id === selectedId);
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    if (selectedCourse) {
-      setUser((prev) => ({
-        ...prev,
-        program: `${selectedCourse.title} ${selectedCourse.programTitle}`,
-        program_id: selectedCourse.program_id,
-        programTitle: selectedCourse.programTitle,
-      }));
-    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreview(reader.result);
+      setFormData((prev) => ({ ...prev, photo: reader.result }));
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleStatusChange = (e) => {
-    setUser((prev) => ({
-      ...prev,
-      status: e.target.checked ? "active" : "inactive",
-    }));
-  };
-
-  // wlomazzi: ==> Future: send to backend — for now only navigate + alert)
-  const handleSubmit = (e) => {
+  // Submit update
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSaving(true);
 
-    if (isEditMode) {
-      alert(`User "${user.firstName} ${user.lastName}" updated successfully!`);
-    } else {
-      alert(`User "${user.firstName} ${user.lastName}" added successfully!`);
+    try {
+      const response = await fetch(buildApiUrl("updateUserProfileAdmin"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: id,
+          ...formData,
+          photo: preview,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        setError(result.message || "Failed to update user.");
+      } else {
+        setMessage("User updated successfully!");
+        setTimeout(() => navigate("/manageusers"), 800);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Error saving changes.");
     }
 
-    navigate("/manageusers");
+    setSaving(false);
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-gray-600">
-        Loading user form...
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Loading user...
       </div>
     );
   }
@@ -123,198 +131,81 @@ const UserForm = () => {
     <div className="bg-gray-50 min-h-screen flex flex-col">
       <TopBar />
 
-      <main className="flex-1 container mx-auto px-6 py-8">
-        <div className="bg-white shadow-md rounded-2xl p-6 max-w-3xl mx-auto">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-            {isEditMode ? `Edit User: ${user.firstName}` : "Add New User"}
+      <main className="flex-1 flex justify-center pt-8 pb-10 px-4">
+        <div className="bg-white shadow-md rounded-2xl p-8 w-full max-w-4xl">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            Edit User Account
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Status + Username */}
-            <div className="grid grid-cols-2 gap-4 items-center">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="status"
-                  checked={user.status === "active"}
-                  onChange={handleStatusChange}
-                  className="w-4 h-4 accent-blue-600"
-                />
-                <label htmlFor="status" className="text-sm text-gray-700">
-                  Active
-                </label>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  name="username"
-                  value={user.username}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* First Name + Last Name */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={user.firstName}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={user.lastName}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={user.email}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
-                required
+          {/* PHOTO + ROLE */}
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6">
+            <div className="flex items-center gap-4">
+              <img
+                src={preview}
+                className="w-20 h-20 rounded-full object-cover border"
               />
-            </div>
 
-            {/* Password (Add only) */}
-            {!isEditMode && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Password
+                <label
+                  htmlFor="photo"
+                  className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
+                >
+                  Change Photo
                 </label>
+
                 <input
-                  type="password"
-                  name="password"
-                  value={user.password}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
-                  required
+                  id="photo"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoUpload}
                 />
               </div>
-            )}
+            </div>
 
-            {/* Role */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Role
-              </label>
+            {/* Role Selector */}
+            <div className="flex flex-col">
+              <label className="mb-1 text-sm font-medium">Role</label>
               <select
                 name="role"
-                value={user.role}
+                value={formData.role}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
+                className="border rounded-lg px-3 py-2"
               >
                 <option value="student">Student</option>
                 <option value="admin">Admin</option>
-                <option value="instructor">Instructor</option>
               </select>
             </div>
+          </div>
 
-            {/* Program + Enrollment Date */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Program
-                </label>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* PERSONAL INFO */}
+            <Section title="Personal Information">
+              <Input label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} />
+              <Input label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} />
+              <Input label="Email Address" name="email" value={formData.email} disabled />
+              <Input label="Phone Number" name="phone" value={formData.phone} onChange={handleChange} />
+            </Section>
 
-                {user.role === "admin" || !isEditMode ? (
-                  <select
-                    name="program"
-                    value={user.program || ""}
-                    onChange={handleProgramChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
-                  >
-                    <option value="">Select Program...</option>
-                    {courses.map((course) => (
-                      <option key={course.id} value={course.id}>
-                        {course.code} – {course.title} ({course.programTitle})
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    value={user.program || ""}
-                    readOnly
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 bg-gray-50"
-                  />
-                )}
-              </div>
+            {/* ADDRESS */}
+            <Section title="Address">
+              <Input label="Address Number" name="addressNumber" value={formData.addressNumber} onChange={handleChange} />
+              <Input label="Street Name" name="streetName" value={formData.streetName} onChange={handleChange} />
+              <Input label="City" name="city" value={formData.city} onChange={handleChange} />
+              <Input label="Province" name="province" value={formData.province} onChange={handleChange} />
+              <Input label="Postal Code" name="postalCode" value={formData.postalCode} onChange={handleChange} />
+            </Section>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Enrollment Date
-                </label>
-                <input
-                  type="date"
-                  name="enrollmentDate"
-                  value={user.enrollmentDate || ""}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
-                />
-              </div>
-            </div>
+            {error && <p className="text-red-600 text-center">{error}</p>}
+            {message && <p className="text-green-600 text-center">{message}</p>}
 
-            {/* Photo URL */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Photo URL
-              </label>
-              <input
-                type="url"
-                name="photo"
-                value={user.photo}
-                onChange={handleChange}
-                placeholder="https://i.pravatar.cc/100?img=1"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-between mt-6">
-              <button
-                type="button"
-                onClick={() => navigate("/manageusers")}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-
+            <div className="text-right">
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                disabled={saving}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
-                {isEditMode ? "Save Changes" : "Add User"}
+                {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>
@@ -325,5 +216,28 @@ const UserForm = () => {
     </div>
   );
 };
+
+const Section = ({ title, children }) => (
+  <section>
+    <h3 className="text-lg font-semibold text-gray-800 mb-3">{title}</h3>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{children}</div>
+  </section>
+);
+
+const Input = ({ label, name, value, onChange, disabled }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
+    <input
+      type="text"
+      name={name}
+      disabled={disabled}
+      value={value}
+      onChange={onChange}
+      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+);
 
 export default UserForm;

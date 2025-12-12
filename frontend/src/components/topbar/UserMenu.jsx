@@ -38,7 +38,6 @@ function UserMenu() {
       case "admin":
         menuItems = [
           { label: "Admin Dashboard", href: "/dashboardadmin" },
-          { label: "Manage Users", href: "/manageusers" },
           { label: "Settings", href: "/settings" },
           { label: "Logout", action: handleLogout, danger: true },
         ];

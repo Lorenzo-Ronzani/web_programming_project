@@ -1,6 +1,3 @@
-// ------------------------------------------------------
-// getProgramById.ts - Fetch one program by ID
-// ------------------------------------------------------
 import { onRequest } from "firebase-functions/v2/https";
 import { db } from "../config/firebase";
 

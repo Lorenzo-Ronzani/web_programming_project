@@ -1,6 +1,3 @@
-// ------------------------------------------------------
-// getCourseById.ts - Get a course entry by ID
-// ------------------------------------------------------
 import { onRequest } from "firebase-functions/v2/https";
 import { db } from "../config/firebase";
 

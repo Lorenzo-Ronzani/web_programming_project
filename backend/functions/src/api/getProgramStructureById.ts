@@ -19,10 +19,8 @@ export const getProgramStructureById = onRequest({ cors: true }, async (req: any
       });
     }
 
-    // 1) tenta buscar por ID do documento
     let docSnap = await db.collection("program_structure").doc(id).get();
 
-    // 2) se não existir, tenta buscar por campo program_id
     if (!docSnap.exists) {
       const querySnap = await db
         .collection("program_structure")

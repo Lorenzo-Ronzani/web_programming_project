@@ -338,7 +338,9 @@ const Settings = () => {
             </Section>
 
             {/* SECURITY */}
+            {/*
             <Section title="Security">
+              
               <Input
                 label="New Password"
                 name="newPassword"
@@ -356,6 +358,7 @@ const Settings = () => {
                 onChange={handleChange}
               />
             </Section>
+            */}
 
             {/* FEEDBACK */}
             {error && <p className="text-red-600 text-center">{error}</p>}

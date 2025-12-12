@@ -1,6 +1,3 @@
-// ------------------------------------------------------
-// deleteProgramStructure.ts - Delete a program structure
-// ------------------------------------------------------
 import { onRequest } from "firebase-functions/v2/https";
 import { db } from "../config/firebase";
 
