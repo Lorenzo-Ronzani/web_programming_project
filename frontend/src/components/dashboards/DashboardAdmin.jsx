@@ -296,7 +296,7 @@ const StudentsOverviewTable = ({ users, coursesUsers }) => {
       .map((u) => ({
         id: u.studentId,
         name: u.displayName || [u.firstName, u.lastName].filter(Boolean).join(" ") || "Unnamed student",
-        email: u.email,
+        email: u.username,
         status: u.status,
         courses: coursesUsers.filter((cu) => cu.student_id === u.studentId).length,
       }));
